@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+
+<html lang="en">
+<head>
+	<title>BoatGame.exe</title>
+	<link rel="stylesheet" type="text/css" href="./css/boatgame.css">
+	<script src="./js/pixelit-master/dist/pixelit.js"></script>
+</head>
+<body class="darkable">
+	<div id="root" class="root flex column">
+		<div id="sqr">
+			<img id="boat_ur" class="mobile-only playerBoat" width="30%" height="auto" src="./img/boat_0_ur.png" style="left: 49.9%; top: 18.01cqw; z-index=10;">
+			<img id="boat_ul" class="mobile-only playerBoat" width="30%" height="auto" src="./img/boat_0_ul.png" style="left: 20%; top: 18.01cqw; z-index=10;">
+			<img id="boat_ll" class="mobile-only playerBoat" width="30%" height="auto" src="./img/boat_0_ll.png" style="left: 20%; top: 48cqw; z-index=10;">
+			<img id="boat_lr" class="mobile-only playerBoat" width="30%" height="auto" src="./img/boat_0_lr.png" style="left: 49.9%; top: 48cqw; z-index=10;">
+		</div>
+		<input id="game-code" class="input-uppercase mobile-only single-line-textarea darkable themeable retro" style="margin-top: 4cqw; height: 8cqw;" type="search" name="game-code-input" placeholder="Game Code"></input>
+		<button id="join-button" class="mobile-only darkable themeable retro" disabled style="margin-top: 1cqw; height: 6cqw;">JOIN</button>
+		<p id="settings-button" class="mobile-only darkable themeable retro">SETTINGS</p>
+		<div id="settings-div" class="mobile-only darkable themeable retro">
+			<div class="flex flex-center" style="position: fixed; margin-top: 3%; width: 100%">
+				<p id="skin-id" class="darkable" style="position: inline;">Skin #0</p>
+			</div>
+			<img src="./img/arrow_next_retro.png" id="skin-back" class="darkable themeable" width="10%" height="auto" style="position: fixed; margin-top: 7%; left: 22%;">
+			<img src="./img/arrow_next_retro.png" id="skin-next" width="10%" height="auto" style="position: fixed; margin-top: 7%; left: 70%;">
+			<p class="darkable" style="position: fixed; margin-top: 20%; left: 30%;">Dark Mode</p>
+			<label class="toggle" style="position: fixed; margin-top: 20%; left: 59%;">
+				<input type="checkbox" id="dark-mode-toggle" name="btnToggle" />
+				<span id="dark-mode-slider" class="slider themeable retro"></span>
+			</label>
+			<p class="darkable" style="position: fixed; margin-top: 30%; left: 30%;">Theme</p>
+			<select id="theme-picker" style="font-size: 2rem; width: 20cqw; height: 6cqw; position: fixed; margin-top: 29.5%; left: 49%;">
+				<option value="retro">Retro</option>
+				<option value="modern">Modern</option>
+				<option value="red">Crimson</option>
+			</select>
+		<div>
+	</div>
+</body>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.3.0/socket.io.js"></script>
+<script src="./js/boatgame.js"></script>
+</html>
+
+

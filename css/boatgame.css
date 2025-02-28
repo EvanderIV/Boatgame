@@ -1,0 +1,307 @@
+@font-face {
+	font-family: "blocky";
+	src: url("../fonts/m6x11plus.ttf");
+}
+
+.root {
+	height: 100%;
+	width: 100%;
+}
+
+.right {
+	float: right;
+}
+
+body {
+	/* So the whole viewport can be used by the square. */
+	margin: 0;
+	/*transition: all 0.2s ease;*/
+}
+
+body.darkable.darkmode {
+	background-color: #333333;
+}
+
+#sqr {
+	/* Uses the 'outer' (i.e. border-box) size when setting width and height. */
+	box-sizing: border-box;
+	width: 100vmin;
+	height: 100vmin;
+	background-color: white;
+}
+
+.flex {
+	position: fixed;
+        display: flex; 
+        /*align-items: center;*/
+        /*justify-content: center;*/
+}
+
+.flex-center {
+	align-items: center;
+	justify-content: center;
+}
+
+.column {
+	flex-direction: column;
+}
+
+.playerBoat {
+	position: fixed;
+}
+
+.input-uppercase {
+	width: 50%;
+	margin-left: 25%;
+	text-transform: uppercase;
+	border-radius: 4cqw;
+}
+
+.single-line-textarea {
+	overflow: hidden;
+	resize: none;
+	scrollbar-width: none;
+}
+
+#game-code {
+	font-size: 4rem;
+	text-align: center;
+}
+
+::placeholder {
+	text-align: center;
+}
+
+#game-code.retro {
+	font-family: "blocky";
+	font-size: 5.5rem;
+}
+
+#game-code.darkmode {
+	color: #FFFFFF;
+	background-color: #555555;
+}
+
+/* For Safari, which doesn't yet support `scrollbar-width`: */
+.single-line-textarea::-webkit-scrollbar {
+	display: none;
+}
+
+.hidden {
+	display: none !important;
+}
+
+#sqr.ship-display-retro {
+	background-image: linear-gradient(to bottom, rgba(255, 255, 255, 0) 0%, rgba(255, 255, 255, 1) 100%), url("../img/water_ripple_retro.gif");
+	background-size: 100% 100%, 100% 100%;
+	/*transition: all 0.2s ease;*/
+}
+
+#sqr.ship-display-retro-darkmode {
+	background-image: linear-gradient(to bottom, rgba(51, 51, 51, 0) 0%, rgba(51, 51, 51, 1) 100%), url("../img/water_ripple_retro.gif");
+	background-size: 100% 100%, 100% 100%;
+	/*transition: all 0.2s ease;*/
+}
+
+#sqr.ship-display-modern {
+	background-image: linear-gradient(to bottom, rgba(255, 255, 255, 0) 0%, rgba(255, 255, 255, 1) 100%), url("../img/water_ripple_modern.gif");
+	background-size: 100% 100%, 100% 100%;
+	/*transition: all 0.2s ease;*/
+}
+
+#sqr.ship-display-modern-darkmode {
+	background-image: linear-gradient(to bottom, rgba(51, 51, 51, 0) 0%, rgba(51, 51, 51, 1) 100%), url("../img/water_ripple_modern.gif");
+	background-size: 100% 100%, 100% 100%;
+	/*transition: all 0.2s ease;*/
+}
+
+#sqr.ship-display-red {
+	background-image: linear-gradient(to bottom, rgba(255, 255, 255, 0) 0%, rgba(255, 255, 255, 1) 100%), url("../img/water_ripple_red.gif");
+	background-size: 100% 100%, 100% 100%;
+	/*transition: all 0.2s ease;*/
+}
+
+#sqr.ship-display-red-darkmode {
+	background-image: linear-gradient(to bottom, rgba(51, 51, 51, 0) 0%, rgba(51, 51, 51, 1) 100%), url("../img/water_ripple_red.gif");
+	background-size: 100% 100%, 100% 100%;
+	/*transition: all 0.2s ease;*/
+}
+
+
+#sqr.grid {
+	background-image: repeating-linear-gradient(#000000 0 2px, transparent 1px 100%), repeating-linear-gradient(90deg, #000000 0 2px, transparent 1px 100%), url("../img/water_tiling_retro.gif");
+	background-size: 10% 10%, 10% 10%, 20% 20%;
+	background-position: -1px -1px, -1px -1px, 0 0;
+	border-style: solid;
+}
+
+#join-button {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	text-align: center;
+	border: 2px solid #0088CC;
+	background-color: #22BBFF;
+	color: #ffffff;
+	padding: 5px 10px;
+	transition: all 0.2s ease;
+	border-radius: 4cqw;
+	margin-left: 32.5%;
+	width: 35%;
+	font-size: 3rem;
+}
+
+#join-button.retro {
+	font-family: "blocky";
+	font-size: 4rem;
+}
+
+#join-button.darkmode {
+	color: #FFFFFF;
+}
+
+#join-button:active {
+	border: 2px solid #000000;
+	background-color: #33CCFF;
+	color: #ffffff;
+	padding: 5px 10px;
+}
+
+#join-button:disabled,
+#join-button[disabled] {
+	border: 2px solid #999999;
+	background-color: #CCCCCC;
+	color: #666666;
+	border-radius: 1cqw;
+	margin-left: 37.5%;
+	width: 25%;
+}
+
+#join-button:disabled.darkmode,
+#join-button[disabled].darkmode {
+	border: 2px solid #222222;
+	background-color: #666666;
+	color: #FFFFFF;
+}
+
+
+#settings-button {
+	border: 2px solid #999999;
+	text-align: center;
+	font-size: 4rem;
+	background-color: #CCCCCC;
+	color: #666666;
+	border-radius: 4cqw 4cqw 0 0;
+	width: 40%;
+	height: 10%;
+	margin-left: 30%;
+	position: fixed;
+	top: 90%;
+	transition: all 0.2s ease;
+}
+
+#settings-button {
+	font-family: "blocky";
+	font-size: 5rem;
+}
+
+#settings-button.darkmode {
+	color: #FFFFFF;
+	background-color: #666666;
+	border: 4px solid #222222;
+}
+
+#settings-div {
+	border: 4px solid #999999;
+	text-align: center;
+	font-size: 3rem;
+	background-color: #CCCCCC;
+	color: #666666;
+	border-radius: 2cqw 2cqw 0 0;
+	width: 100%;
+	height: 25%;
+	position: fixed;
+	top: 100%;
+	transition: all 0.2s ease;
+}
+
+#settings-div.retro p {
+	font-family: "blocky";
+	font-size: 4rem;
+	transform: translateY(-1cqw);
+}
+
+#settings-div.darkmode {
+	color: #FFFFFF;
+	background-color: #666666;
+	border: 4px solid #222222;
+}
+
+.toggle {
+	position: relative;
+	display: inline-block;
+	width: 10cqw;
+	height: 5cqw;
+}
+
+.toggle input {
+	display: none;
+}
+
+.slider {
+	position: absolute;
+	cursor: pointer;
+	top: 0;
+	left: 0;
+	right: 0;
+	bottom: 0;
+	background-color: #444444;
+	transition: 0.4s;
+	border-radius: 5cqw;
+}
+
+.slider.retro {
+	border-radius: 0;
+}
+
+.slider:before {
+	position: absolute;
+	content: "";
+	height: 4cqw;
+	width: 4cqw;
+	left: 0.5cqw;
+	bottom: 0.5cqw;
+	background-color: #FFFFFF;
+	transition: all 0.2s ease;
+	border-radius: 50%;
+}
+
+.slider.retro:before {
+	border-radius: 0;
+}
+
+input:checked + .slider {
+	background-color: #11AADD;
+}
+
+input:checked + .slider:before {
+	transform: translateX(5cqw);
+}
+
+#skin-back {
+	filter: brightness(10%);
+}
+
+#skin-back.darkmode {
+	filter: brightness(100%);
+}
+
+#skin-next {
+	filter: brightness(10%);
+}
+
+#skin-next.darkmode {
+	filter: brightness(100%);
+}
+
+
