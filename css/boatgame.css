@@ -200,7 +200,7 @@ body.darkable.darkmode {
 	transition: all 0.2s ease;
 }
 
-#settings-button {
+#settings-button.retro {
 	font-family: "blocky";
 	font-size: 5rem;
 }
@@ -289,7 +289,7 @@ input:checked + .slider:before {
 }
 
 #skin-back {
-	filter: brightness(10%);
+	filter: brightness(50%);
 }
 
 #skin-back.darkmode {
@@ -297,7 +297,7 @@ input:checked + .slider:before {
 }
 
 #skin-next {
-	filter: brightness(10%);
+	filter: brightness(50%);
 }
 
 #skin-next.darkmode {

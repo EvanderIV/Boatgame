@@ -1,6 +1,10 @@
 
 let SKIN_COUNT = 5;
 
+function playOneShot(url) {
+	new Audio(url).play();
+}
+
 var cookies = document.cookie
 	.split(';')
 	.map(cookie => cookie.split('='))
@@ -19,10 +23,11 @@ if (document.cookie.includes("cosmetic")) {
 
 let theme = "retro";
 if (document.cookie.includes("theme")) {
+	document.getElementById("theme-picker").value = cookies.theme;
 	let arrowL = document.getElementById("skin-back");
 	let arrowR = document.getElementById("skin-next");
-	arrowL.src = "./img/arrow_" + cookies.cosmetic;
-	arrowR.src = "./img/arrow_" + cookies.cosmetic;
+	arrowL.src = "./img/arrow_" + cookies.theme + ".png";
+	arrowR.src = "./img/arrow_" + cookies.theme + ".png";
 	let themeableElems = document.getElementsByClassName("themeable");
 	if (cookies.theme === "modern") {
 		for (let i = 0; i < themeableElems.length; i++) {
@@ -84,11 +89,13 @@ else {
 	document.getElementById("root").classList.remove("column");
 }
 
+/*
 var Interval = window.setInterval(updateGamestate, 10);
 
 function updateGamestate() {
 	
 }
+*/
 
 let gameCodeInput = document.getElementById("game-code");
 gameCodeInput.addEventListener('input', function(event) {
@@ -105,11 +112,13 @@ let settingsDiv = document.getElementById("settings-div");
 let settingsBtn = document.getElementById("settings-button");
 settingsBtn.addEventListener('click', function(event) {
 	if (settingsOpen) {
+		document.getElementById("settings-close-sfx").play();
 		settingsBtn.style.top = "90%";
 		settingsDiv.style.top = "100%";
 		settingsOpen = false;
 	}
 	else {
+		document.getElementById("settings-open-sfx").play();
 		settingsBtn.style.top = "65%";
 		settingsDiv.style.top = "75%";
 		settingsOpen = true;
@@ -145,8 +154,8 @@ themePicker.addEventListener('change', function(event) {
 	theme = event.target.value;
 	let arrowL = document.getElementById("skin-back");
 	let arrowR = document.getElementById("skin-next");
-	arrowL.src = "./img/arrow_" + theme;
-	arrowR.src = "./img/arrow_" + theme;
+	arrowL.src = "./img/arrow_" + theme + ".png";
+	arrowR.src = "./img/arrow_" + theme + ".png";
 	if (darkMode) {
 		document.getElementById("sqr").classList.remove("ship-display-retro-darkmode");
 		document.getElementById("sqr").classList.remove("ship-display-modern-darkmode");

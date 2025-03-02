@@ -18,11 +18,13 @@
 		<button id="join-button" class="mobile-only darkable themeable retro" disabled style="margin-top: 1cqw; height: 6cqw;">JOIN</button>
 		<p id="settings-button" class="mobile-only darkable themeable retro">SETTINGS</p>
 		<div id="settings-div" class="mobile-only darkable themeable retro">
+			<audio id="settings-open-sfx" src="./audio/paper_slide_in.mp3"></audio>
+			<audio id="settings-close-sfx" src="./audio/paper_slide_out.mp3"></audio>
 			<div class="flex flex-center" style="position: fixed; margin-top: 3%; width: 100%">
 				<p id="skin-id" class="darkable" style="position: inline;">Skin #0</p>
 			</div>
-			<img src="./img/arrow_next_retro.png" id="skin-back" class="darkable themeable" width="10%" height="auto" style="position: fixed; margin-top: 7%; left: 22%;">
-			<img src="./img/arrow_next_retro.png" id="skin-next" width="10%" height="auto" style="position: fixed; margin-top: 7%; left: 70%;">
+			<img src="./img/arrow_retro.png" id="skin-back" class="darkable themeable" width="10%" height="auto" style="position: fixed; margin-top: 7%; left: 21%; transform: rotate(180deg)">
+			<img src="./img/arrow_retro.png" id="skin-next" class="darkable themeable" width="10%" height="auto" style="position: fixed; margin-top: 7%; left: 70%;">
 			<p class="darkable" style="position: fixed; margin-top: 20%; left: 30%;">Dark Mode</p>
 			<label class="toggle" style="position: fixed; margin-top: 20%; left: 59%;">
 				<input type="checkbox" id="dark-mode-toggle" name="btnToggle" />
