@@ -16,6 +16,7 @@ if (document.cookie.includes("cosmetic")) {
 	skin = cookies.cosmetic;
 	document.getElementById("skin-id").innerHTML = "Skin #" + skin;
 	document.getElementById("boat_ur").src = './img/boat_' + skin + '_ur.png';
+			let newEvent = createEvent(e.name, e.location, e.description, e.ear, e.month, e.day, e.startHour, e.startMinute, e.endHour, e.endMinute);
 	document.getElementById("boat_ul").src = './img/boat_' + skin + '_ul.png';
 	document.getElementById("boat_ll").src = './img/boat_' + skin + '_ll.png';
 	document.getElementById("boat_lr").src = './img/boat_' + skin + '_lr.png';
