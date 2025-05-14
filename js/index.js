@@ -1,65 +1,107 @@
-
 let SKIN_COUNT = 5;
 
-function playOneShot(url) {
-	new Audio(url).play();
+var cookies = document.cookie
+    .split(';')
+    .map(cookie => cookie.split('='))
+    .reduce((accumulator, [key, value]) =>
+    ({ ...accumulator, [key.trim()]: decodeURIComponent(value) }),
+{});
+
+const sillyNames = [
+    "SailingSquid", "Captain Jellyfish", "TidalTurtle", "WaveMaster", "BuoyBouncer",
+    "Marine Chan", "MarinerMango", "Ocean Otter", "Banana Boat", "ShipShape",
+    "AnchorApple", "CompassCake", "DolphinDancer", "FishFinder", "iplayseaofthieves",
+    "nacho avg sailor"
+];
+
+function getRandomSillyName() {
+    const adjIndex = Math.floor(Math.random() * sillyNames.length);
+    //const number = Math.floor(Math.random() * 100);
+    return `${sillyNames[adjIndex]}`;
 }
 
-var cookies = document.cookie
-	.split(';')
-	.map(cookie => cookie.split('='))
-	.reduce((accumulator, [key, value]) =>
-	({ ...accumulator, [key.trim()]: decodeURIComponent(value) }),
-{});
-let skin = 0;
+// Audio settings
+if (!document.cookie.includes("musicVolume")) {
+    document.cookie = "musicVolume=0.5";
+}
+if (!document.cookie.includes("sfxVolume")) {
+    document.cookie = "sfxVolume=0.5";
+}
+if (!document.cookie.includes("playJoinSounds")) {
+    document.cookie = "playJoinSounds=1";
+}
+let musicVolume = cookies.musicVolume ? parseFloat(cookies.musicVolume) : 0.5;
+let sfxVolume = cookies.sfxVolume ? parseFloat(cookies.sfxVolume) : 0.5;
+let playJoinSounds = cookies.playJoinSounds !== "0";
+
+// Audio handling
+function playOneShot(url, volume) {
+    if (!volume) return; // Don't play if volume is 0
+    const audio = new Audio(url);
+    audio.volume = volume;
+    audio.play();
+}
+
+let backgroundMusic;
+function playBackgroundMusic(url, modiferVolume, volume = musicVolume) {
+    if (backgroundMusic) {
+        backgroundMusic.pause();
+    }
+    backgroundMusic = new Audio(url);
+    backgroundMusic.volume = volume * modiferVolume;
+    backgroundMusic.loop = true;
+    backgroundMusic.play();
+}
+
+
+let skin = 1;
 if (document.cookie.includes("cosmetic")) {
-	skin = cookies.cosmetic;
-	document.getElementById("skin-id").innerHTML = "Skin #" + skin;
-	document.getElementById("boat_ur").src = './img/boat_' + skin + '_ur.png';
-			let newEvent = createEvent(e.name, e.location, e.description, e.ear, e.month, e.day, e.startHour, e.startMinute, e.endHour, e.endMinute);
-	document.getElementById("boat_ul").src = './img/boat_' + skin + '_ul.png';
-	document.getElementById("boat_ll").src = './img/boat_' + skin + '_ll.png';
-	document.getElementById("boat_lr").src = './img/boat_' + skin + '_lr.png';
+    skin = cookies.cosmetic;
+    document.getElementById("skin-id").innerHTML = "Skin #" + skin;
+    document.getElementById("boat_ur").src = './assets/boats/' + skin + '/ur.png';
+    document.getElementById("boat_ul").src = './assets/boats/' + skin + '/ul.png';
+    document.getElementById("boat_ll").src = './assets/boats/' + skin + '/ll.png';
+    document.getElementById("boat_lr").src = './assets/boats/' + skin + '/lr.png';
 }
 
 let theme = "retro";
 if (document.cookie.includes("theme")) {
-	document.getElementById("theme-picker").value = cookies.theme;
-	let arrowL = document.getElementById("skin-back");
-	let arrowR = document.getElementById("skin-next");
-	arrowL.src = "./img/arrow_" + cookies.theme + ".png";
-	arrowR.src = "./img/arrow_" + cookies.theme + ".png";
-	let themeableElems = document.getElementsByClassName("themeable");
-	if (cookies.theme === "modern") {
-		for (let i = 0; i < themeableElems.length; i++) {
-			themeableElems[i].classList.add("modern");
-			themeableElems[i].classList.remove("red");
-			themeableElems[i].classList.remove("retro");
-		}
-		theme = "modern";
-	}
-	else if (cookies.theme === "red") {
-		for (let i = 0; i < themeableElems.length; i++) {
-			themeableElems[i].classList.remove("modern");
-			themeableElems[i].classList.add("red");
-			themeableElems[i].classList.remove("retro");
-		}
-		theme = "red";
-	}
+    document.getElementById("theme-picker").value = cookies.theme;
+    let arrowL = document.getElementById("skin-back");
+    let arrowR = document.getElementById("skin-next");
+    arrowL.src = "./img/arrow_" + cookies.theme + ".png";
+    arrowR.src = "./img/arrow_" + cookies.theme + ".png";
+    let themeableElems = document.getElementsByClassName("themeable");
+    if (cookies.theme === "modern") {
+        for (let i = 0; i < themeableElems.length; i++) {
+            themeableElems[i].classList.add("modern");
+            themeableElems[i].classList.remove("red");
+            themeableElems[i].classList.remove("retro");
+        }
+        theme = "modern";
+    }
+    else if (cookies.theme === "red") {
+        for (let i = 0; i < themeableElems.length; i++) {
+            themeableElems[i].classList.remove("modern");
+            themeableElems[i].classList.add("red");
+            themeableElems[i].classList.remove("retro");
+        }
+        theme = "red";
+    }
 }
 
 let darkMode = false;
 if (cookies.darkMode === "1") {
-	let darkableElems = document.getElementsByClassName("darkable");
-	for (let i = 0; i < darkableElems.length; i++) {
-		darkableElems[i].classList.add("darkmode");
-	}
-	darkMode = true;
-	document.getElementById("dark-mode-toggle").checked = true;
-	document.getElementById("sqr").classList.add("ship-display-" + theme + "-darkmode");
+    let darkableElems = document.getElementsByClassName("darkable");
+    for (let i = 0; i < darkableElems.length; i++) {
+        darkableElems[i].classList.add("darkmode");
+    }
+    darkMode = true;
+    document.getElementById("dark-mode-toggle").checked = true;
+    document.getElementById("sqr").classList.add("ship-display-" + theme + "-darkmode");
 }
 else {
-	document.getElementById("sqr").classList.add("ship-display-" + theme);
+    document.getElementById("sqr").classList.add("ship-display-" + theme);
 }
 
 
@@ -74,138 +116,603 @@ window.mobileAndTabletCheck = function() {
 let isMobileUser = window.mobileAndTabletCheck();
 
 if (isMobileUser) {
-	let desktopElems = document.getElementsByClassName("desktop-only");
-	for (let i = 0; i < desktopElems.length; i++) {
-		desktopElems[i].classList.add("hidden");
-	}
-	document.getElementById("sqr").classList.add("ship-display");
+    let desktopElems = document.getElementsByClassName("desktop-only");
+    for (let i = 0; i < desktopElems.length; i++) {
+        desktopElems[i].classList.add("hidden");
+    }
+    document.getElementById("sqr").classList.add("ship-display");
 }
 else {
-	let mobileElems = document.getElementsByClassName("mobile-only");
-	for (let i = 0; i < mobileElems.length; i++) {
-		mobileElems[i].classList.add("hidden");
-	}
-	document.getElementById("sqr").classList.add("grid");
-	document.getElementById("root").classList.add("flex-center");
-	document.getElementById("root").classList.remove("column");
+    let mobileElems = document.getElementsByClassName("mobile-only");
+    for (let i = 0; i < mobileElems.length; i++) {
+        mobileElems[i].classList.add("hidden");
+    }
+    document.getElementById("sqr").classList.add("grid");
+    document.getElementById("root").classList.add("flex-center");
+    document.getElementById("root").classList.remove("column");
 }
 
-/*
-var Interval = window.setInterval(updateGamestate, 10);
+// Desktop lobby and settings functionality
+if (!isMobileUser) {
+    const settingsModal = document.getElementById('settings-modal');
+    const settingsBtnDesktop = document.getElementById('settings-btn-desktop');
+    const closeSettings = document.getElementById('close-settings');
+    const tabButtons = document.querySelectorAll('.tab-button');
+    const tabPanels = document.querySelectorAll('.tab-panel');
+    const createLobbyBtn = document.getElementById('create-lobby');
+    const lobbyOverlay = document.getElementById('lobby-overlay');
+    const roomCodeDisplay = document.getElementById('room-code');
+    const playersContainer = document.getElementById('players-container');
 
-function updateGamestate() {
-	
+    // Generate random lobby code
+    function generateLobbyCode() {
+        const letters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+        let code = '';
+        for (let i = 0; i < gameCodeLength; i++) {
+            code += letters.charAt(Math.floor(Math.random() * letters.length));
+        }
+        return code;
+    }
+
+    // Settings modal functionality
+    function openSettings() {
+        settingsModal.style.display = 'block';
+    }
+
+    function closeSettingsModal() {
+        settingsModal.style.display = 'none';
+    }
+
+    // Tab functionality
+    tabButtons.forEach(button => {
+        button.addEventListener('click', () => {
+            // Remove active class from all buttons and panels
+            tabButtons.forEach(btn => btn.classList.remove('active'));
+            tabPanels.forEach(panel => panel.classList.remove('active'));
+
+            // Add active class to clicked button and corresponding panel
+            button.classList.add('active');
+            const tabName = button.getAttribute('data-tab');
+            document.getElementById(tabName + '-tab').classList.add('active');
+        });
+    });
+
+    // Player management
+    let players = [];
+    let isHost = false;
+
+    function addPlayer(name, skinId, isHostPlayer = false) {
+        if (isHostPlayer) {
+            isHost = true;
+            return; // Don't add host to the player list
+        }
+        players.push({ name, skinId });
+        updatePlayerList();
+    }
+
+    function removePlayer(name) {
+        players = players.filter(p => p.name !== name);
+        updatePlayerList();
+    }
+
+    function updatePlayerList() {
+        playersContainer.innerHTML = '';
+        
+        // Add header with player count
+        const header = document.createElement('h2');
+        header.textContent = `Players (${players.length})`;
+        playersContainer.appendChild(header);
+        
+        players.forEach(player => {
+            const playerItem = document.createElement('div');
+            playerItem.className = 'player-item';
+            
+            const boatImg = document.createElement('img');
+            boatImg.src = `./assets/boats/${player.skinId}/icon.png`;
+            
+            const playerName = document.createElement('span');
+            playerName.textContent = player.name;
+            
+            playerItem.appendChild(boatImg);
+            playerItem.appendChild(playerName);
+            playersContainer.appendChild(playerItem);
+        });
+    }
+
+    // Initialize empty player list
+    updatePlayerList();    // Event listeners
+    createLobbyBtn.addEventListener('click', () => {
+        const code = generateLobbyCode();
+        roomCodeDisplay.textContent = "Room Code: " + code;
+        lobbyOverlay.style.display = 'none';
+        // Connect to server and create room
+        createRoom(code);
+        // Register as host but don't show in player list
+        addPlayer('You (Host)', skin, true);
+        // Start background music
+        playBackgroundMusic('./assets/audio/background_music.mp3', 0.5);
+    });
+
+    settingsBtnDesktop.addEventListener('click', openSettings);
+    closeSettings.addEventListener('click', closeSettingsModal);
+
+    // Close modal when clicking outside
+    window.addEventListener('click', (event) => {
+        if (event.target === settingsModal) {
+            closeSettingsModal();
+        }
+    });
+
+    // Handle Escape key
+    document.addEventListener('keydown', (event) => {
+        if (event.key === 'Escape') {
+            if (settingsModal.style.display === 'block') {
+                closeSettingsModal();
+            } else {
+                openSettings();
+            }
+        }
+    });
 }
-*/
+
+// WebSocket connection handling
+let socket;
+let pingInterval;
+let lastPongReceived;
+
+function connectToServer() {
+    if (socket && socket.connected) {
+        return; // Already connected
+    }
+      socket = io('http://localhost:3000', {
+        reconnectionAttempts: 5,
+        timeout: 10000,
+        transports: ['websocket', 'polling'],
+        forceNew: true,
+        reconnectionDelay: 1000,
+        reconnectionDelayMax: 5000,
+        maxRetries: 3,
+        pingInterval: 25000,
+        pingTimeout: 60000
+    });
+      socket.on('connect', () => {
+        console.log('Connected to server');
+        lastPongReceived = Date.now();
+        
+        // Clear any existing ping interval
+        if (pingInterval) {
+            clearInterval(pingInterval);
+        }
+        
+        // Start ping interval
+        pingInterval = setInterval(() => {
+            if (socket.connected) {
+                socket.emit('ping');
+                // Check if we haven't received a pong in 60 seconds
+                if (Date.now() - lastPongReceived > 60000) {
+                    console.log('Connection lost, attempting to reconnect...');
+                    clearInterval(pingInterval);
+                    socket.disconnect();
+                    setTimeout(() => connectToServer(), 1000);
+                }
+            }
+        }, 25000);
+    });
+
+    socket.on('pong', () => {
+        lastPongReceived = Date.now();
+    });
+
+    socket.on('roomError', (data) => {
+        showError(data.message);
+    });
+
+    socket.on('roomClosed', () => {
+        showError('Host has disconnected');
+        // Return to join screen
+        document.getElementById('join-screen').style.display = 'flex';
+        document.getElementById('game-screen').style.display = 'none';
+    });
+}
+
+// Host-specific WebSocket handling
+function createRoom(roomCode) {
+    if (!socket || !socket.connected) {
+        connectToServer();
+        socket.once('connect', () => {
+            performCreateRoom(roomCode);
+        });
+    } else {
+        performCreateRoom(roomCode);
+    }
+}
+
+function performCreateRoom(roomCode) {
+    console.log('Creating room with code:', roomCode);
+    
+    // Remove any existing listeners first
+    socket.off('playerJoined');
+    socket.off('playerLeft');
+    
+    socket.emit('create-room', { 
+        roomCode: roomCode,
+        hostId: socket.id,
+        hostSkin: skin
+    });
+    
+    // Add new event listeners
+    socket.on('playerJoined', ({ name, skinId }) => {
+        console.log('Player joined:', name);
+        // Update player list in UI
+        addPlayerToList(name, skinId);
+        updatePlayerCount();
+    });
+    
+    socket.on('playerLeft', ({ name }) => {
+        console.log('Player left:', name);
+        // Remove player from UI
+        removePlayerFromList(name);
+        updatePlayerCount();
+    });
+}
+
+// Get a random join sound file path
+function getRandomJoinSound() {
+    const joinSounds = [
+        './assets/audio/player_join_1.mp3',
+        './assets/audio/player_join_2.mp3',
+        './assets/audio/player_join_3.mp3'
+    ];
+    return joinSounds[Math.floor(Math.random() * joinSounds.length)];
+}
+
+function addPlayerToList(name, skinId) {
+    const playerList = document.getElementById('player-list');
+    if (!playerList) return;
+    
+    const playerItem = document.createElement('div');
+    playerItem.className = 'player-item';
+    playerItem.dataset.name = name;
+    
+    const playerIcon = document.createElement('img');
+    playerIcon.src = `./assets/boats/${skinId}/icon.png`;
+    
+    const playerName = document.createElement('span');
+    playerName.textContent = name;
+    
+    playerItem.appendChild(playerIcon);
+    playerItem.appendChild(playerName);
+    playerList.appendChild(playerItem);
+    
+    // Add highlight animation
+    playerItem.classList.add('highlight');
+    // Remove highlight class after animation completes
+    setTimeout(() => playerItem.classList.remove('highlight'), 2000);
+    
+    // Play random join sound if enabled
+    if (playJoinSounds) {
+        playOneShot(getRandomJoinSound(), 0.3);
+    }
+}
+
+function removePlayerFromList(name) {
+    const playerList = document.getElementById('player-list');
+    if (!playerList) return;
+    
+    const playerItem = playerList.querySelector(`[data-name="${name}"]`);
+    if (playerItem) {
+        // Play leave sound if enabled
+        if (playJoinSounds) {
+            playOneShot('./assets/audio/player_leave.mp3', 0.1);
+        }
+        playerItem.remove();
+    }
+}
+
+function updatePlayerCount() {
+    const playerList = document.getElementById('player-list');
+    const playerCount = document.getElementById('player-count');
+    if (!playerList || !playerCount) return;
+    
+    const count = playerList.children.length;
+    playerCount.textContent = `Players: ${count}`;
+}
+
+// Device detection for different modes
+function initializeGameMode() {
+    
+    if (isMobileUser) {
+        // Mobile client mode - throwing errors
+        //document.getElementById('join-screen').style.display = 'flex';
+        //document.getElementById('host-controls').style.display = 'none';
+    } else {
+        // Desktop host mode - throwing errors
+        //document.getElementById('join-screen').style.display = 'none';
+        //document.getElementById('host-controls').style.display = 'flex';
+        // Generate and display room code
+        const roomCode = generateRoomCode();
+        document.getElementById('room-code').textContent = "Room Code: " + roomCode;
+        createRoom(roomCode);
+    }
+}
+
+function generateRoomCode() {
+    return Math.random().toString(36).substring(2, 6).toUpperCase();
+}
+
+
+// Join room function
+function joinRoom(roomCode, playerName, skinId) {
+    if (!socket || !socket.connected) {
+        connectToServer();
+        
+        // Wait for connection before joining
+        socket.once('connect', () => {
+            performJoin(roomCode, playerName, skinId);
+        });
+    } else {
+        performJoin(roomCode, playerName, skinId);
+    }
+}
+
+function performJoin(roomCode, playerName, skinId) {
+    console.log('Attempting to join room:', roomCode);
+    showError('Joining room...');
+    
+    socket.emit('join-room', {
+        roomCode: roomCode.toUpperCase(),
+        name: playerName,
+        skinId: skinId,
+        clientId: socket.id
+    });
+
+    // Set up handlers for room join process
+    socket.once('joinSuccess', (data) => {
+        console.log('Successfully joined room:', data);
+        showError('Successfully joined room!');
+        // Hide join UI elements
+        document.getElementById('game-code').style.display = 'none';
+        document.getElementById('join-button').style.display = 'none';
+    });
+
+    socket.once('roomError', (error) => {
+        console.error('Room join error:', error);
+        showError(error.message || 'Failed to join room');
+        // Re-enable join UI
+        document.getElementById('game-code').style.display = '';
+        document.getElementById('join-button').style.display = '';
+    });
+}
+
+function showError(message) {
+    const errorDiv = document.getElementById('error-message');
+    if (errorDiv) {
+        errorDiv.textContent = message;
+        errorDiv.style.display = 'block';
+        setTimeout(() => {
+            errorDiv.style.display = 'none';
+        }, 3000);
+    }
+}
 
 let gameCodeInput = document.getElementById("game-code");
 gameCodeInput.addEventListener('input', function(event) {
-	if (event.target.value.length === gameCodeLength) {
-		document.getElementById("join-button").removeAttribute("disabled");
-	}
-	else {
-		document.getElementById("join-button").setAttribute("disabled", true);
-	}
+    if (event.target.value.length === gameCodeLength) {
+        document.getElementById("join-button").removeAttribute("disabled");
+    }
+    else {
+        document.getElementById("join-button").setAttribute("disabled", true);
+    }
 });
 
 let settingsOpen = false;
 let settingsDiv = document.getElementById("settings-div");
 let settingsBtn = document.getElementById("settings-button");
+
+// Touch handling variables
+let touchStartY = 0;
+let touchEndY = 0;
+const minSwipeDistance = 50; // Minimum distance for a swipe to be detected
+
+let settingsOpenSFX = document.getElementById("settings-open-sfx");
+let settingsCloseSFX = document.getElementById("settings-close-sfx");
+// Function to toggle settings menu
+function toggleSettings(open) {
+    if (open && !settingsOpen) {
+        settingsOpenSFX.play();
+        settingsBtn.style.top = "65%";
+        settingsDiv.style.top = "75%";
+        settingsOpen = true;
+    } else if (!open && settingsOpen) {
+        settingsCloseSFX.play();
+        settingsBtn.style.top = "90%";
+        settingsDiv.style.top = "100%";
+        settingsOpen = false;
+    }
+}
+
+// Touch event handlers
+function handleTouchStart(event) {
+    touchStartY = event.touches[0].clientY;
+}
+
+function handleTouchEnd(event) {
+    touchEndY = event.changedTouches[0].clientY;
+    const swipeDistance = touchEndY - touchStartY;
+      if (Math.abs(swipeDistance) >= minSwipeDistance) {
+        if (swipeDistance > 0 && settingsOpen) {
+            // Swipe down, close settings
+            toggleSettings(false);
+        } else if (swipeDistance < 0 && !settingsOpen) {
+            // Swipe up, open settings
+            toggleSettings(true);
+        }
+    }
+}
+
+// Add touch event listeners
+settingsBtn.addEventListener('touchstart', handleTouchStart);
+settingsBtn.addEventListener('touchend', handleTouchEnd);
+settingsDiv.addEventListener('touchstart', handleTouchStart);
+settingsDiv.addEventListener('touchend', handleTouchEnd);
+
 settingsBtn.addEventListener('click', function(event) {
-	if (settingsOpen) {
-		document.getElementById("settings-close-sfx").play();
-		settingsBtn.style.top = "90%";
-		settingsDiv.style.top = "100%";
-		settingsOpen = false;
-	}
-	else {
-		document.getElementById("settings-open-sfx").play();
-		settingsBtn.style.top = "65%";
-		settingsDiv.style.top = "75%";
-		settingsOpen = true;
-	}
+    toggleSettings(!settingsOpen);
 });
 
 let darkModeSwitch = document.getElementById("dark-mode-toggle");
 darkModeSwitch.addEventListener('change', function(event) {
-	if (darkMode) {
-		let darkableElems = document.getElementsByClassName("darkable");
-		for (let i = 0; i < darkableElems.length; i++) {
-			darkableElems[i].classList.remove("darkmode");
-		}
-		darkMode = false;
-		document.getElementById("sqr").classList.add("ship-display-" + theme);
-		document.getElementById("sqr").classList.remove("ship-display-" + theme + "-darkmode");
-		document.cookie = "darkMode=0";
-	}
-	else {
-		let darkableElems = document.getElementsByClassName("darkable");
-		for (let i = 0; i < darkableElems.length; i++) {
-			darkableElems[i].classList.add("darkmode");
-		}
-		document.getElementById("sqr").classList.remove("ship-display-" + theme);
-		document.getElementById("sqr").classList.add("ship-display-" + theme + "-darkmode");
-		darkMode = true;
-		document.cookie = "darkMode=1";
-	}
+    if (darkMode) {
+        let darkableElems = document.getElementsByClassName("darkable");
+        for (let i = 0; i < darkableElems.length; i++) {
+            darkableElems[i].classList.remove("darkmode");
+        }
+        darkMode = false;
+        document.getElementById("sqr").classList.add("ship-display-" + theme);
+        document.getElementById("sqr").classList.remove("ship-display-" + theme + "-darkmode");
+        document.cookie = "darkMode=0";
+    }
+    else {
+        let darkableElems = document.getElementsByClassName("darkable");
+        for (let i = 0; i < darkableElems.length; i++) {
+            darkableElems[i].classList.add("darkmode");
+        }
+        document.getElementById("sqr").classList.remove("ship-display-" + theme);
+        document.getElementById("sqr").classList.add("ship-display-" + theme + "-darkmode");
+        darkMode = true;
+        document.cookie = "darkMode=1";
+    }
 });
 
 let themePicker = document.getElementById("theme-picker");
 themePicker.addEventListener('change', function(event) {
-	theme = event.target.value;
-	let arrowL = document.getElementById("skin-back");
-	let arrowR = document.getElementById("skin-next");
-	arrowL.src = "./img/arrow_" + theme + ".png";
-	arrowR.src = "./img/arrow_" + theme + ".png";
-	if (darkMode) {
-		document.getElementById("sqr").classList.remove("ship-display-retro-darkmode");
-		document.getElementById("sqr").classList.remove("ship-display-modern-darkmode");
-		document.getElementById("sqr").classList.remove("ship-display-red-darkmode");
-		document.getElementById("sqr").classList.add("ship-display-" + theme + "-darkmode");
-	}
-	else {
-		document.getElementById("sqr").classList.remove("ship-display-retro");
-		document.getElementById("sqr").classList.remove("ship-display-modern");
-		document.getElementById("sqr").classList.remove("ship-display-red");
-		document.getElementById("sqr").classList.add("ship-display-" + theme);
-	}
-	let themeableElems = document.getElementsByClassName("themeable");
-	for (let i = 0; i < themeableElems.length; i++) {
-		themeableElems[i].classList.remove("modern");
-		themeableElems[i].classList.remove("red");
-		themeableElems[i].classList.remove("retro");
-		themeableElems[i].classList.add(theme);
-	}
-	document.cookie = "theme=" + theme;
+    theme = event.target.value;
+    let arrowL = document.getElementById("skin-back");
+    let arrowR = document.getElementById("skin-next");
+    arrowL.src = "./img/arrow_" + theme + ".png";
+    arrowR.src = "./img/arrow_" + theme + ".png";
+    if (darkMode) {
+        document.getElementById("sqr").classList.remove("ship-display-retro-darkmode");
+        document.getElementById("sqr").classList.remove("ship-display-modern-darkmode");
+        document.getElementById("sqr").classList.remove("ship-display-red-darkmode");
+        document.getElementById("sqr").classList.add("ship-display-" + theme + "-darkmode");
+    }
+    else {
+        document.getElementById("sqr").classList.remove("ship-display-retro");
+        document.getElementById("sqr").classList.remove("ship-display-modern");
+        document.getElementById("sqr").classList.remove("ship-display-red");
+        document.getElementById("sqr").classList.add("ship-display-" + theme);
+    }
+    let themeableElems = document.getElementsByClassName("themeable");
+    for (let i = 0; i < themeableElems.length; i++) {
+        themeableElems[i].classList.remove("modern");
+        themeableElems[i].classList.remove("red");
+        themeableElems[i].classList.remove("retro");
+        themeableElems[i].classList.add(theme);
+    }
+    document.cookie = "theme=" + theme;
 });
 
 let nextSkin = document.getElementById("skin-next");
 nextSkin.addEventListener('click', function(event) {
-	skin++;
-	if (skin >= SKIN_COUNT) {
-		skin = 0;
-	}
-	document.cookie = "cosmetic=" + skin;
-	document.getElementById("skin-id").innerHTML = "Skin #" + skin;
-	document.getElementById("boat_ur").src = './img/boat_' + skin + '_ur.png';
-	document.getElementById("boat_ul").src = './img/boat_' + skin + '_ul.png';
-	document.getElementById("boat_ll").src = './img/boat_' + skin + '_ll.png';
-	document.getElementById("boat_lr").src = './img/boat_' + skin + '_lr.png';
+    skin++;
+    if (skin >= SKIN_COUNT) {
+        skin = 1;
+    }
+    document.cookie = "cosmetic=" + skin;
+    document.getElementById("skin-id").innerHTML = "Skin #" + skin;
+    document.getElementById("boat_ur").src = './assets/boats/' + skin + '/ur.png';
+    document.getElementById("boat_ul").src = './assets/boats/' + skin + '/ul.png';
+    document.getElementById("boat_ll").src = './assets/boats/' + skin + '/ll.png';
+    document.getElementById("boat_lr").src = './assets/boats/' + skin + '/lr.png';
 });
 
 let backSkin = document.getElementById("skin-back");
 backSkin.addEventListener('click', function(event) {
-	skin--;
-	if (skin < 0) {
-		skin = SKIN_COUNT - 1;
-	}
-	document.cookie = "cosmetic=" + skin;
-	document.getElementById("skin-id").innerHTML = "Skin #" + skin;
-	document.getElementById("boat_ur").src = './img/boat_' + skin + '_ur.png';
-	document.getElementById("boat_ul").src = './img/boat_' + skin + '_ul.png';
-	document.getElementById("boat_ll").src = './img/boat_' + skin + '_ll.png';
-	document.getElementById("boat_lr").src = './img/boat_' + skin + '_lr.png';
+    skin--;
+    if (skin < 1) {
+        skin = SKIN_COUNT;
+    }
+    document.cookie = "cosmetic=" + skin;
+    document.getElementById("skin-id").innerHTML = "Skin #" + skin;
+    document.getElementById("boat_ur").src = './assets/boats/' + skin + '/ur.png';
+    document.getElementById("boat_ul").src = './assets/boats/' + skin + '/ul.png';
+    document.getElementById("boat_ll").src = './assets/boats/' + skin + '/ll.png';
+    document.getElementById("boat_lr").src = './assets/boats/' + skin + '/lr.png';
 });
+
+// Nickname handling
+let nicknameInput = document.getElementById('nickname');
+let savedNickname = cookies.nickname;
+
+if (savedNickname) {
+    nicknameInput.value = savedNickname;
+} else {
+    nicknameInput.value = getRandomSillyName();
+}
+
+nicknameInput.addEventListener('change', function(event) {
+    const newNickname = event.target.value.trim();
+    if (newNickname) {
+        document.cookie = `nickname=${encodeURIComponent(newNickname)}`;
+    }
+});
+
+// Game code input and join button functionality
+const joinButton = document.getElementById('join-button');
+
+gameCodeInput.addEventListener('input', function(event) {
+    const value = event.target.value.toUpperCase();
+    event.target.value = value;
+    joinButton.disabled = value.length !== gameCodeLength;
+});
+
+joinButton.addEventListener('click', function() {
+    const roomCode = gameCodeInput.value.toUpperCase();
+    if (roomCode.length === gameCodeLength) {
+        const nickname = nicknameInput.value.trim() || getRandomSillyName();
+        joinRoom(roomCode, nickname, skin);
+    }
+});
+
+// Add error message div if not present
+if (!document.getElementById('error-message')) {
+    const errorDiv = document.createElement('div');
+    errorDiv.id = 'error-message';
+    errorDiv.style.cssText = 'display: none; color: red; position: fixed; top: 20%; left: 50%; transform: translateX(-50%); z-index: 1000;';
+    document.body.appendChild(errorDiv);
+}
+
+// Initialize audio controls
+if (!isMobileUser) {
+    const musicVolumeSlider = document.getElementById('music-volume');
+    const sfxVolumeSlider = document.getElementById('sfx-volume');
+    const playJoinSoundsToggle = document.getElementById('play-join-sounds');
+
+    // Set initial values
+    musicVolumeSlider.value = musicVolume * 100;
+    sfxVolumeSlider.value = sfxVolume * 100;
+    playJoinSoundsToggle.checked = playJoinSounds;
+
+    // Add event listeners
+    musicVolumeSlider.addEventListener('input', (e) => {
+        musicVolume = e.target.value / 100;
+        if (backgroundMusic) {
+            backgroundMusic.volume = musicVolume;
+        }
+        document.cookie = `musicVolume=${musicVolume}`;
+    });
+
+    sfxVolumeSlider.addEventListener('input', (e) => {
+        sfxVolume = e.target.value / 100;
+        document.cookie = `sfxVolume=${sfxVolume}`;
+    });
+
+    playJoinSoundsToggle.addEventListener('change', (e) => {
+        playJoinSounds = e.target.checked;
+        document.cookie = `playJoinSounds=${playJoinSounds ? "1" : "0"}`;
+    });
+}
 
 
 
