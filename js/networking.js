@@ -5,6 +5,7 @@ let lastPongReceived;
 let onPlayerJoined;
 let onPlayerLeft;
 let onReadyStateUpdate;
+let onPlayerInfoUpdate;
 
 function connectToServer() {
     if (socket && socket.connected) {
@@ -68,6 +69,13 @@ function connectToServer() {
             onReadyStateUpdate(name, ready);
         }
     });
+
+    // Add player info update handler
+    socket.on('player-info-update', ({ oldName, newName, newSkin }) => {
+        if (onPlayerInfoUpdate) {
+            onPlayerInfoUpdate(oldName, newName, newSkin);
+        }
+    });
 }
 
 function createRoom(roomCode) {
@@ -126,6 +134,11 @@ function performJoin(roomCode, playerName, skinId) {
     console.log('Attempting to join room:', roomCode);
     showError('Joining room...');
     
+    // Setup updatePlayerInfo handler first
+    socket.on('updatePlayerInfo', (data) => {
+        console.log('Sending player info update:', data);
+    });
+
     socket.emit('join-room', {
         roomCode: roomCode.toUpperCase(),
         name: playerName,
@@ -176,9 +189,19 @@ window.networkManager = {
     createRoom,
     joinRoom,
     setReadyState,
+    socket, // Expose socket for direct events
+    updatePlayerInfo: (data) => {
+        console.log('NetworkManager: Sending player info update:', data);
+        if (socket && socket.connected) {
+            socket.emit('updatePlayerInfo', data);
+        } else {
+            console.error('NetworkManager: Cannot send update - socket not connected');
+        }
+    },
     setCallbacks: (callbacks) => {
         onPlayerJoined = callbacks.onPlayerJoined;
         onPlayerLeft = callbacks.onPlayerLeft;
         onReadyStateUpdate = callbacks.onReadyStateUpdate;
+        onPlayerInfoUpdate = callbacks.onPlayerInfoUpdate;
     }
 };

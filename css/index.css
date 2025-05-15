@@ -247,6 +247,29 @@ body.darkable.darkmode {
 	color: #FFFFFF;
 }
 
+#ready-button:disabled {
+    background-color: #CCCCCC;
+    border-color: #999999;
+    color: #666666;
+    cursor: not-allowed;
+    opacity: 0.7;
+}
+
+#ready-button.not-ready {
+    background-color: #FF4444;
+    border-color: #CC0000;
+}
+
+#ready-button.not-ready:hover {
+    background-color: #FF5555;
+}
+
+#ready-button.darkmode:disabled {
+    background-color: #444444;
+    border-color: #222222;
+    color: #888888;
+}
+
 
 
 
@@ -477,6 +500,10 @@ input:checked + .slider:before {
     opacity: 0.6;
 }
 
+.tab-button.darkmode {
+    color: #FFFFFF;
+}
+
 .tab-button.retro {
     font-family: "blocky";
     font-size: 1.5rem;
@@ -494,6 +521,10 @@ input:checked + .slider:before {
 
 .tab-panel.active {
     display: block;
+}
+
+.tab-panel.darkmode {
+    color: FFFFFF;
 }
 
 #close-settings {
@@ -670,6 +701,11 @@ input:checked + .slider:before {
     border-radius: 4px;
 }
 
+.settings-group.darkmode {
+    background-color: #484848;
+    color: #FFFFFF;
+}
+
 .settings-group.retro {
     border-radius: 0;
 }
@@ -806,10 +842,213 @@ input[type="range"].retro::-webkit-slider-thumb {
     background-color: #FF5555;
 }
 
+#ready-button:disabled {
+    background-color: #CCCCCC;
+    border-color: #999999;
+    color: #666666;
+    cursor: not-allowed;
+    opacity: 0.7;
+}
+
+#ready-button.darkmode:disabled {
+    background-color: #444444;
+    border-color: #222222;
+    color: #888888;
+}
+
 /* Disabled controls when ready */
 input:disabled {
     opacity: 0.5;
     cursor: not-allowed;
+}
+
+/* Player list item highlight effects */
+@keyframes nickname-change-flash {
+    0%, 100% { color: inherit; }
+    50% { color: #ff9933; } /* Orange flash for nickname changes */
+}
+
+@keyframes skin-change-flash {
+    0%, 100% { filter: brightness(100%); }
+    50% { filter: brightness(150%) drop-shadow(0 0 5px #3399ff); } /* Blue glow for skin changes */
+}
+
+.nickname-changed {
+    animation: nickname-change-flash 1s ease-in-out;
+}
+
+.skin-changed {
+    animation: skin-change-flash 1s ease-in-out;
+}
+
+/* Existing highlight animation for new players */
+.highlight {
+    animation: join-flash 2s ease-in-out;
+}
+
+@keyframes join-flash {
+    0%, 100% { background-color: transparent; }
+    50% { background-color: rgba(51, 255, 51, 0.3); } /* Green flash for joins */
+}
+
+#suit-squares {
+    display: none; /* Initially hidden */
+    width: 30cqw;
+    height: 30cqw;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 2cqw;
+    padding: 2cqw;
+    margin: 10px auto;
+    position: relative;
+    touch-action: none;
+    z-index: 100;
+    visibility: hidden;
+    opacity: 0;
+    transition: opacity 0.3s ease-in-out, visibility 0.3s ease-in-out;
+    transform-origin: center;
+}
+
+#suit-squares.show {
+    display: grid;
+    visibility: visible;
+    opacity: 1;
+}
+
+#suit-squares.empty {
+    visibility: hidden;
+    opacity: 0;
+    transform: scale(0.9);
+}
+
+#suit-squares {
+    position: relative;
+}
+
+.suit-square {
+    width: 13cqw; /* Account for grid gap */
+    height: 13cqw;
+    border: 2px solid #999999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 8cqw;
+    background-color: #CCCCCC;
+    user-select: none;
+    touch-action: none;
+    transition: all 0.2s ease-in-out;
+    will-change: transform;
+    margin: 0;
+    position: relative;
+}
+
+/* Styling for squares when they're placed on the boat */
+.suit-square.placed {
+    background-color: transparent;
+    border: none;
+    position: fixed;
+    pointer-events: auto;
+    transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1), 
+                left 0.3s cubic-bezier(0.34, 1.56, 0.64, 1),
+                top 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.suit-square.darkmode {
+    border-color: #222222;
+    background-color: #666666;
+    color: #FFFFFF;
+}
+
+.suit-square[data-suit="hearts"],
+.suit-square[data-suit="diamonds"] {
+    color: #FF0000;
+}
+
+.suit-square.darkmode[data-suit="hearts"],
+.suit-square.darkmode[data-suit="diamonds"] {
+    color: #FF6666;
+}
+
+.suit-square:active {
+    cursor: grabbing;
+    transform: scale(1.1);
+    z-index: 1000;
+}
+
+.suit-square.retro {
+    border-radius: 0;
+}
+
+.suit-square.modern {
+    border-radius: 8px;
+}
+
+/* Direction arrows for boat placement */
+.boat-container {
+    position: relative;
+}
+
+@keyframes slideAnimation {
+    0% { transform: translate(0, 0) rotate(-90deg); }
+    50% { transform: translate(5px, 0) rotate(-90deg); }
+    100% { transform: translate(0, 0) rotate(-90deg); }
+}
+
+.direction-arrow {
+    position: absolute;
+    width: 0;
+    height: 0;
+    border-style: solid;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.direction-arrow::before {
+    content: '';
+    position: absolute;
+    border-style: solid;
+    border-width: 12px;
+    border-color: rgba(255, 0, 0, 0.5);
+}
+
+/* Arrow positions and rotations */
+.top-arrow {
+    left: 15%;
+    top: 18.01cqw;
+    transform: rotate(-90deg);
+}
+
+.right-arrow {
+    left: 44.9%;
+    top: 18.01cqw;
+    transform: rotate(-90deg);
+}
+
+.bottom-arrow {
+    left: 44.9%;
+    top: 48cqw;
+    transform: rotate(-90deg);
+}
+
+.left-arrow {
+    left: 15%;
+    top: 48cqw;
+    transform: rotate(-90deg);
+}
+
+/* Arrow styling */
+.direction-arrow::before {
+    border-width: 15px 25px 15px 0;
+    border-color: transparent rgba(255, 0, 0, 0.5) transparent transparent;
+}
+
+/* Animation for each arrow */
+.direction-arrow {
+    animation: slideAnimation 1.5s ease-in-out infinite;
+}
+
+/* Show arrows when game is joined */
+.game-joined .direction-arrow {
+    opacity: 0.5;
 }
 
 

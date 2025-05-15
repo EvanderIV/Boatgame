@@ -101,6 +101,36 @@ io.on('connection', client => {
         });
     });
 
+    // Handle player info updates (nickname and skin changes)
+    client.on('updatePlayerInfo', (data) => {
+        if (!roomCode) return;
+        
+        const room = activeRooms.get(roomCode);
+        if (!room) return;
+
+        const playerData = room.players.get(client.id);
+        if (!playerData) return;
+
+        const oldName = playerData.name;
+        
+        // Update player data in the room
+        if (data.newNickname) {
+            playerData.name = data.newNickname;
+        }
+        if (data.newSkin !== undefined) {
+            playerData.skinId = data.newSkin;
+        }
+
+        console.log(`Player ${client.id} updated info:`, playerData);
+
+        // Notify host about the changes
+        io.to(room.hostId).emit('player-info-update', {
+            oldName: oldName,
+            newName: data.newNickname,
+            newSkin: data.newSkin
+        });
+    });
+
     const handleDisconnect = () => {
         if (roomCode) {
             const room = activeRooms.get(roomCode);

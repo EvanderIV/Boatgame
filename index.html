@@ -7,7 +7,6 @@
 	<meta name="darkreader-lock">
 	<link rel="stylesheet" type="text/css" href="./css/index.css">
 	<script src="https://cdn.socket.io/4.6.0/socket.io.min.js"></script>
-	<script src="./js/pixelit-master/dist/pixelit.js"></script>
 </head>
 <body class="darkable">
 	<div id="lobby-overlay" class="desktop-only">
@@ -21,15 +20,33 @@
 		</div>
 		<div id="root" class="root flex column">
 			<div id="sqr">
-				<img id="boat_ur" class="mobile-only playerBoat" width="30%" height="auto" src="./assets/boats/1/ur.png" style="left: 49.9%; top: 18.01cqw; z-index: 10;">
-				<img id="boat_ul" class="mobile-only playerBoat" width="30%" height="auto" src="./assets/boats/1/ul.png" style="left: 20%; top: 18.01cqw; z-index: 10;">
-				<img id="boat_ll" class="mobile-only playerBoat" width="30%" height="auto" src="./assets/boats/1/ll.png" style="left: 20%; top: 48cqw; z-index: 10;">
-				<img id="boat_lr" class="mobile-only playerBoat" width="30%" height="auto" src="./assets/boats/1/lr.png" style="left: 49.9%; top: 48cqw; z-index: 10;">
+				<div id="boat_ur_container" class="boat-container">
+					<img id="boat_ur" class="mobile-only playerBoat" width="30%" height="auto" src="./assets/boats/1/ur.png" style="left: 49.9%; top: 18.01cqw; z-index: 10;">
+					<div class="direction-arrow right-arrow"></div>
+				</div>
+				<div id="boat_ul_container" class="boat-container">
+					<img id="boat_ul" class="mobile-only playerBoat" width="30%" height="auto" src="./assets/boats/1/ul.png" style="left: 20%; top: 18.01cqw; z-index: 10;">
+					<div class="direction-arrow top-arrow"></div>
+				</div>
+				<div id="boat_ll_container" class="boat-container">
+					<img id="boat_ll" class="mobile-only playerBoat" width="30%" height="auto" src="./assets/boats/1/ll.png" style="left: 20%; top: 48cqw; z-index: 10;">
+					<div class="direction-arrow left-arrow"></div>
+				</div>
+				<div id="boat_lr_container" class="boat-container">
+					<img id="boat_lr" class="mobile-only playerBoat" width="30%" height="auto" src="./assets/boats/1/lr.png" style="left: 49.9%; top: 48cqw; z-index: 10;">
+					<div class="direction-arrow bottom-arrow"></div>
+				</div>
+			</div>
+			<div id="suit-squares" class="mobile-only">
+				<div class="suit-square darkable themeable" data-suit="hearts">&heartsuit;</div>
+				<div class="suit-square darkable themeable" data-suit="diamonds">&diamondsuit;</div>
+				<div class="suit-square darkable themeable" data-suit="clubs">&clubsuit;</div>
+				<div class="suit-square darkable themeable" data-suit="spades">&spadesuit;</div>
 			</div>
 			<input id="nickname" class="mobile-only single-line-textarea darkable themeable retro" style="margin-top: 16cqw; height: 8cqw; width: 60%;" type="text" name="nickname-input" placeholder="Nickname" maxlength="20"></input>
 			<input id="game-code" class="input-uppercase mobile-only single-line-textarea darkable themeable retro" style="margin-top: 2cqw; height: 8cqw;" type="search" name="game-code-input" placeholder="Room Code" maxlength="4"></input>
 			<button id="join-button" class="mobile-only darkable themeable retro" disabled style="margin-top: 1cqw; height: 6cqw;">JOIN</button>
-			<button id="ready-button" class="mobile-only darkable themeable retro" style="font-size: 2rem; width: 40%; height: 6cqw;">Ready</button>
+			<button id="ready-button" class="mobile-only darkable themeable retro" style="font-size: 2rem; width: 40%; height: 6cqw;" disabled>Ready</button>
 			<p id="settings-button" class="mobile-only darkable themeable retro">SETTINGS</p>
 			<div id="settings-div" class="mobile-only darkable themeable retro">
 				<audio id="settings-open-sfx" src="./audio/paper_slide_in.mp3"></audio>
@@ -57,20 +74,30 @@
 	<div id="settings-modal" class="modal desktop-only darkable themeable retro">
 		<div class="modal-content darkable themeable">
 			<div class="tab-container">
-				<button class="tab-button active" data-tab="mode">Mode</button>
-				<button class="tab-button" data-tab="gameplay">Gameplay</button>
-				<button class="tab-button" data-tab="advanced">System</button>
+				<button class="darkable tab-button active" data-tab="mode">Mode</button>
+				<button class="darkable tab-button" data-tab="gameplay">Gameplay</button>
+				<button class="darkable tab-button" data-tab="advanced">System</button>
 			</div>
 			<div class="tab-content">
-				<div id="mode-tab" class="tab-panel active">
+				<div id="mode-tab" class="darkable tab-panel active">
 					<h2>Game Mode Settings</h2>
 				</div>
-				<div id="gameplay-tab" class="tab-panel">
+				<div id="gameplay-tab" class="darkable tab-panel">
 					<h2>Gameplay Settings</h2>
 				</div>
-				<div id="advanced-tab" class="tab-panel">
+				<div id="advanced-tab" class="darkable tab-panel">
 					<h2>System Settings</h2>
-					<div class="settings-group">
+					<div class="darkable settings-group">
+						<h3>Display Settings</h3>
+						<div class="setting-item">
+							<label>Dark Mode</label>
+							<label class="toggle">
+								<input type="checkbox" id="dark-mode-toggle-desktop">
+								<span class="slider themeable retro"></span>
+							</label>
+						</div>
+					</div>
+					<div class="darkable settings-group">
 						<h3>Audio Settings</h3>
 						<div class="setting-item">
 							<label for="music-volume">Music Volume</label>
@@ -95,8 +122,8 @@
 	</div>
 </body>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.3.0/socket.io.js"></script>
-<script src="./js/networking.js"></script>
-<script src="./js/index.js"></script>
+<script type="module" src="./js/networking.js"></script>
+<script type="module" src="./js/index.js"></script>
 </html>
 
 
