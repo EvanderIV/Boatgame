@@ -21,20 +21,20 @@
 		<div id="root" class="root flex column">
 			<div id="sqr">
 				<div id="boat_ur_container" class="boat-container">
-					<img id="boat_ur" class="mobile-only playerBoat" width="30%" height="auto" src="./assets/boats/1/ur.png" style="left: 49.9%; top: 18.01cqw; z-index: 10;">
-					<div class="direction-arrow right-arrow"></div>
+					<img id="boat_ur" class="mobile-only playerBoat" src="./assets/boats/1/ur.png" style="left: 49.9%; top: 18.01cqw; z-index: 10;">
+					<img src="./img/arrow_retro.png" id="right-arrow" class="direction-arrow right-arrow darkable themeable">
 				</div>
 				<div id="boat_ul_container" class="boat-container">
-					<img id="boat_ul" class="mobile-only playerBoat" width="30%" height="auto" src="./assets/boats/1/ul.png" style="left: 20%; top: 18.01cqw; z-index: 10;">
-					<div class="direction-arrow top-arrow"></div>
+					<img id="boat_ul" class="mobile-only playerBoat" src="./assets/boats/1/ul.png" style="left: 20%; top: 18.01cqw; z-index: 10;">
+					<img src="./img/arrow_retro.png" id="top-arrow" class="direction-arrow top-arrow darkable themeable">
 				</div>
 				<div id="boat_ll_container" class="boat-container">
-					<img id="boat_ll" class="mobile-only playerBoat" width="30%" height="auto" src="./assets/boats/1/ll.png" style="left: 20%; top: 48cqw; z-index: 10;">
-					<div class="direction-arrow left-arrow"></div>
+					<img id="boat_ll" class="mobile-only playerBoat" src="./assets/boats/1/ll.png" style="left: 20%; top: 48cqw; z-index: 10;">
+					<img src="./img/arrow_retro.png" id="left-arrow" class="direction-arrow left-arrow darkable themeable">
 				</div>
 				<div id="boat_lr_container" class="boat-container">
-					<img id="boat_lr" class="mobile-only playerBoat" width="30%" height="auto" src="./assets/boats/1/lr.png" style="left: 49.9%; top: 48cqw; z-index: 10;">
-					<div class="direction-arrow bottom-arrow"></div>
+					<img id="boat_lr" class="mobile-only playerBoat" src="./assets/boats/1/lr.png" style="left: 49.9%; top: 48cqw; z-index: 10;">
+					<img src="./img/arrow_retro.png" id="bottom-arrow" class="direction-arrow bottom-arrow darkable themeable">
 				</div>
 			</div>
 			<div id="suit-squares" class="mobile-only">
@@ -46,6 +46,7 @@
 			<input id="nickname" class="mobile-only single-line-textarea darkable themeable retro" style="margin-top: 16cqw; height: 8cqw; width: 60%;" type="text" name="nickname-input" placeholder="Nickname" maxlength="20"></input>
 			<input id="game-code" class="input-uppercase mobile-only single-line-textarea darkable themeable retro" style="margin-top: 2cqw; height: 8cqw;" type="search" name="game-code-input" placeholder="Room Code" maxlength="4"></input>
 			<button id="join-button" class="mobile-only darkable themeable retro" disabled style="margin-top: 1cqw; height: 6cqw;">JOIN</button>
+			<div id="error-message"></div>
 			<button id="ready-button" class="mobile-only darkable themeable retro" style="font-size: 2rem; width: 40%; height: 6cqw;" disabled>Ready</button>
 			<p id="settings-button" class="mobile-only darkable themeable retro">SETTINGS</p>
 			<div id="settings-div" class="mobile-only darkable themeable retro">
@@ -54,8 +55,8 @@
 				<div class="flex flex-center" style="position: fixed; margin-top: 3%; width: 100%">
 					<p id="skin-id" class="darkable" style="position: inline;">Skin #1</p>
 				</div>
-				<img src="./img/arrow_retro.png" id="skin-back" class="darkable themeable" width="10%" height="auto" style="position: fixed; margin-top: 7%; left: 21%; transform: rotate(180deg)">
-				<img src="./img/arrow_retro.png" id="skin-next" class="darkable themeable" width="10%" height="auto" style="position: fixed; margin-top: 7%; left: 70%;">
+				<img src="./img/arrow_retro.png" id="skin-back" class="darkable themeable">
+				<img src="./img/arrow_retro.png" id="skin-next" class="darkable themeable">
 				<p class="darkable" style="position: fixed; margin-top: 20%; left: 30%;">Dark Mode</p>
 				<label class="toggle" style="position: fixed; margin-top: 20%; left: 59%;">
 					<input type="checkbox" id="dark-mode-toggle" name="btnToggle" />

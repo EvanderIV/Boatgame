@@ -373,6 +373,7 @@ function getRandomJoinSound() {
 }
 
 
+
 // Device detection for different modes
 function initializeGameMode() {
     
@@ -410,17 +411,6 @@ function generateRoomCode() {
 
 
 
-
-function showError(message) {
-    const errorDiv = document.getElementById('error-message');
-    if (errorDiv) {
-        errorDiv.textContent = message;
-        errorDiv.style.display = 'block';
-        setTimeout(() => {
-            errorDiv.style.display = 'none';
-        }, 3000);
-    }
-}
 
 let gameCodeInput = document.getElementById("game-code");
 gameCodeInput.addEventListener('input', function(event) {
@@ -724,48 +714,6 @@ skinNext.addEventListener('click', function(event) {
     // ...existing code...
 });
 
-// Player functions are now global
-// performJoin implementation
-function performJoin(roomCode, playerName, skinId) {
-    console.log('Attempting to join room:', roomCode);
-    showError('Joining room...');
-    
-    socket.emit('join-room', {
-        roomCode: roomCode.toUpperCase(),
-        name: playerName,
-        skinId: skinId,
-        clientId: socket.id
-    });
-
-    // Set up handlers for room join process
-    socket.once('joinSuccess', (data) => {
-        console.log('Successfully joined room:', data);
-        showError('Successfully joined room!');
-        // Hide join UI elements
-        document.getElementById('game-code').style.display = 'none';
-        document.getElementById('join-button').style.display = 'none';
-        document.getElementById('ready-button').style.display = 'inline-flex';
-        
-        // Show and enable suit squares
-        const suitSquares = document.getElementById('suit-squares');
-        const root = document.getElementById('root');
-        if (suitSquares) {
-            suitSquares.classList.add('show');
-        }
-        if (root) {
-            root.classList.add('game-joined');
-        }
-    });
-    
-    socket.once('roomError', (error) => {
-        console.error('Room join error:', error);
-        showError(error.message || 'Failed to join room');
-        // Re-enable join UI
-        document.getElementById('game-code').style.display = '';
-        document.getElementById('join-button').style.display = '';
-        document.getElementById('ready-button').style.display = 'none';
-    });
-}
 
 // Update createRoom to handle ready state updates
 function performCreateRoom(roomCode) {
@@ -877,6 +825,7 @@ function updateReadyButtonState() {
     // Only enable the ready button if all suits are placed
     const allSuitsPlaced = placedSuits.size === boatSections.length;
     readyButton.disabled = !allSuitsPlaced;
+    //readyButton.style.opacity = allSuitsPlaced ? '1' : '0.5';
 }
 
 // Reset a square back to its original position
@@ -892,9 +841,6 @@ function resetSquarePosition(square) {
             square.style.top = '';
         }, 300);
     }
-    const readyButton = document.getElementById('ready-button');
-    // Only enable the ready button if all suits are placed
-    readyButton.disabled = true;
 }
 
 suitSquares.forEach(square => {

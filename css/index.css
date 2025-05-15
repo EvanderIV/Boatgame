@@ -55,7 +55,9 @@ body.darkable.darkmode {
 }
 
 .playerBoat {
-	position: fixed;
+	position: absolute;
+    width: 30%;
+    height: auto;
 }
 
 .input-uppercase {
@@ -378,6 +380,13 @@ input:checked + .slider:before {
 }
 
 #skin-back {
+    position: absolute;
+    margin-top: 7%;
+    left: 21%;
+    width: 10%;
+    height: auto;
+    cursor: pointer;
+    transform: rotate(180deg);
 	filter: brightness(50%);
 }
 
@@ -386,6 +395,12 @@ input:checked + .slider:before {
 }
 
 #skin-next {
+    position: absolute;
+    margin-top: 7%;
+    left: 70%;
+    width: 10%;
+    height: auto;
+    cursor: pointer;
 	filter: brightness(50%);
 }
 
@@ -686,12 +701,16 @@ input:checked + .slider:before {
 }
 
 #error-message {
-    background-color: rgba(255, 0, 0, 0.8);
-    color: white;
-    padding: 10px 20px;
-    border-radius: 5px;
-    font-size: 1.2em;
-    text-align: center;
+    display: none;
+    color: red;
+    position: absolute;
+    margin-top: 50vmin;
+    font-size: 3rem;
+    font-weight: bold;
+    background-image: linear-gradient(to right, #00000000 0%, #444444FF 50%, #00000000 100%);
+    z-index: 1000;
+    opacity: 0.0;
+    transition: opacity 0.5s ease;
 }
 
 .settings-group {
@@ -909,7 +928,7 @@ input:disabled {
 }
 
 #suit-squares.show {
-    display: grid;
+    display: grid !important;
     visibility: visible;
     opacity: 1;
 }
@@ -939,6 +958,7 @@ input:disabled {
     will-change: transform;
     margin: 0;
     position: relative;
+    z-index: 1000;
 }
 
 /* Styling for squares when they're placed on the boat */
@@ -985,55 +1005,70 @@ input:disabled {
 /* Direction arrows for boat placement */
 .boat-container {
     position: relative;
+    justify-content: center;
+    align-items: center;
 }
 
-@keyframes slideAnimation {
+@keyframes slideAnimationUL {
     0% { transform: translate(0, 0) rotate(-90deg); }
-    50% { transform: translate(5px, 0) rotate(-90deg); }
+    50% { transform: translate(0, 8px) rotate(-90deg); }
     100% { transform: translate(0, 0) rotate(-90deg); }
+}
+
+@keyframes slideAnimationUR {
+    0% { transform: translate(0, 0) rotate(0deg); }
+    50% { transform: translate(-8px, 0) rotate(0deg); }
+    100% { transform: translate(0, 0) rotate(0deg); }
+}
+
+@keyframes slideAnimationLL {
+    0% { transform: translate(0, 0) rotate(180deg); }
+    50% { transform: translate(8px, 0) rotate(180deg); }
+    100% { transform: translate(0, 0) rotate(180deg); }
+}
+
+@keyframes slideAnimationLR {
+    0% { transform: translate(0, 0) rotate(90deg); }
+    50% { transform: translate(0, -8px) rotate(90deg); }
+    100% { transform: translate(0, 0) rotate(90deg); }
 }
 
 .direction-arrow {
     position: absolute;
-    width: 0;
-    height: 0;
-    border-style: solid;
+    width: 10%;
+    height: auto;
     opacity: 0;
     transition: opacity 0.3s ease;
-}
-
-.direction-arrow::before {
-    content: '';
-    position: absolute;
-    border-style: solid;
-    border-width: 12px;
-    border-color: rgba(255, 0, 0, 0.5);
+    z-index: 200;
+    pointer-events: none;
 }
 
 /* Arrow positions and rotations */
 .top-arrow {
-    left: 15%;
-    top: 18.01cqw;
-    transform: rotate(-90deg);
+    left: calc(15cqw + 15cqw);
+    top: calc(10cqw + 18.01cqw);
+    animation: slideAnimationUL 1.5s ease-in-out infinite;
 }
 
 .right-arrow {
-    left: 44.9%;
-    top: 18.01cqw;
-    transform: rotate(-90deg);
+    left: calc(15cqw + 44.9cqw);
+    top: calc(10cqw + 18.01cqw);
+    animation: slideAnimationUR 1.5s ease-in-out infinite;
 }
 
 .bottom-arrow {
-    left: 44.9%;
-    top: 48cqw;
-    transform: rotate(-90deg);
+    left: calc(15cqw + 44.9cqw);
+    top: calc(10cqw + 48cqw);
+    animation: slideAnimationLR 1.5s ease-in-out infinite;
 }
 
 .left-arrow {
-    left: 15%;
-    top: 48cqw;
-    transform: rotate(-90deg);
+    left: calc(15cqw + 15cqw);
+    top: calc(10cqw + 48cqw);
+    animation: slideAnimationLL 1.5s ease-in-out infinite;
 }
+
+
 
 /* Arrow styling */
 .direction-arrow::before {
@@ -1041,10 +1076,6 @@ input:disabled {
     border-color: transparent rgba(255, 0, 0, 0.5) transparent transparent;
 }
 
-/* Animation for each arrow */
-.direction-arrow {
-    animation: slideAnimation 1.5s ease-in-out infinite;
-}
 
 /* Show arrows when game is joined */
 .game-joined .direction-arrow {

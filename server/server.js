@@ -48,7 +48,7 @@ io.on('connection', client => {
         };
 
         if (!activeRooms.has(roomCode)) {
-            client.emit('roomError', { message: 'Room does not exist' });
+            client.emit('roomError', { message: 'Room not found' });
             return;
         }
 

@@ -11,8 +11,7 @@ function connectToServer() {
     if (socket && socket.connected) {
         return; // Already connected
     }
-    
-    socket = io('http://localhost:3000', {
+    socket = io('https://eminich.com:3000', {
         reconnectionAttempts: 5,
         timeout: 10000,
         transports: ['websocket', 'polling'],
@@ -154,6 +153,14 @@ function performJoin(roomCode, playerName, skinId) {
         document.getElementById('game-code').style.display = 'none';
         document.getElementById('join-button').style.display = 'none';
         document.getElementById('ready-button').style.display = 'inline-flex';
+        const suitSquares = document.getElementById('suit-squares');
+        const root = document.getElementById('root');
+        if (suitSquares) {
+            suitSquares.classList.add('show');
+        }
+        if (root) {
+            root.classList.add('game-joined');
+        }
     });
     
     socket.once('roomError', (error) => {
@@ -178,8 +185,14 @@ function showError(message) {
         errorDiv.textContent = message;
         errorDiv.style.display = 'block';
         setTimeout(() => {
-            errorDiv.style.display = 'none';
+            errorDiv.style.opacity = '1';
+        }, 10);
+        setTimeout(() => {
+            errorDiv.style.opacity = '0';
         }, 3000);
+        setTimeout(() => {
+            errorDiv.style.display = 'none';
+        }, 3500);
     }
 }
 
