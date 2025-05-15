@@ -43,7 +43,8 @@ io.on('connection', client => {
         console.log(`Join room attempt: ${roomCode}`);
         const playerData = {
             name: data.name,
-            skinId: data.skinId
+            skinId: data.skinId,
+            ready: false
         };
 
         if (!activeRooms.has(roomCode)) {
@@ -80,6 +81,24 @@ io.on('connection', client => {
     client.on('ping', () => {
         client.emit('pong');
         lastPing = Date.now();
+    });
+
+    // Handle ready state changes
+    client.on('ready-state-change', (data) => {
+        if (!roomCode) return;
+        
+        const room = activeRooms.get(roomCode);
+        if (!room) return;
+
+        const playerData = room.players.get(client.id);
+        if (!playerData) return;
+
+        playerData.ready = data.ready;
+        // Notify host about ready state change
+        io.to(room.hostId).emit('ready-state-update', {
+            name: playerData.name,
+            ready: data.ready
+        });
     });
 
     const handleDisconnect = () => {

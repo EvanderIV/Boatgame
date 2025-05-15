@@ -9,7 +9,7 @@ var cookies = document.cookie
 
 const sillyNames = [
     "SailingSquid", "Captain Jellyfish", "TidalTurtle", "WaveMaster", "BuoyBouncer",
-    "Marine Chan", "MarinerMango", "Ocean Otter", "Banana Boat", "ShipShape",
+    "Marine", "MarinerMango", "Ocean Otter", "Banana Boat", "ShipShape",
     "AnchorApple", "CompassCake", "DolphinDancer", "FishFinder", "iplayseaofthieves",
     "nacho avg sailor"
 ];
@@ -55,8 +55,8 @@ function playBackgroundMusic(url, modiferVolume, volume = musicVolume) {
 
 
 let skin = 1;
-if (document.cookie.includes("cosmetic")) {
-    skin = cookies.cosmetic;
+if (document.cookie.includes("skin")) {
+    skin = cookies.skin;
     document.getElementById("skin-id").innerHTML = "Skin #" + skin;
     document.getElementById("boat_ur").src = './assets/boats/' + skin + '/ur.png';
     document.getElementById("boat_ul").src = './assets/boats/' + skin + '/ul.png';
@@ -132,6 +132,131 @@ else {
     document.getElementById("root").classList.remove("column");
 }
 
+// Global player management
+let players = [];
+let isHost = false;
+
+function addPlayer(name, skinId, isHostPlayer = false) {
+    if (isHostPlayer) {
+        isHost = true;
+        return; // Don't add host to the player list
+    }
+    players.push({ name, skinId, ready: false });
+    updatePlayerList();
+}
+
+function updatePlayerList() {
+    const playerList = document.getElementById('player-list');
+    if (!playerList) return;
+    
+    // Clear existing list
+    playerList.innerHTML = '';
+    
+    // Add header with player count
+    const header = document.createElement('h2');
+    header.textContent = `Players (${players.length})`;
+    playerList.appendChild(header);
+    
+    players.forEach(player => {
+        const playerItem = document.createElement('div');
+        playerItem.className = 'player-item';
+        playerItem.dataset.name = player.name;
+        
+        const boatImg = document.createElement('img');
+        boatImg.src = `./assets/boats/${player.skinId}/icon.png`;
+        
+        const playerName = document.createElement('span');
+        playerName.textContent = player.name;
+        
+        const readyCheckbox = document.createElement('div');
+        readyCheckbox.className = 'ready-checkbox ' + (player.ready ? 'checked' : '');
+        readyCheckbox.innerHTML = player.ready ? '✓' : '';
+        
+        playerItem.appendChild(boatImg);
+        playerItem.appendChild(playerName);
+        playerItem.appendChild(readyCheckbox);
+        playerList.appendChild(playerItem);
+    });
+}
+
+function addPlayerToList(name, skinId, ready = false) {
+    const playerList = document.getElementById('player-list');
+    if (!playerList) return;
+    
+    // Add to players array
+    players.push({ name, skinId, ready });
+    
+    // Update the full list to ensure count is correct
+    updatePlayerList();
+    
+    // Find the new player's item and add highlight
+    const playerItem = playerList.querySelector(`[data-name="${name}"]`);
+    if (playerItem) {
+        playerItem.classList.add('highlight');
+        setTimeout(() => playerItem.classList.remove('highlight'), 2000);
+    }
+    
+    // Play random join sound if enabled
+    if (playJoinSounds) {
+        playOneShot(getRandomJoinSound(), 0.3);
+    }
+}
+
+function removePlayerFromList(name) {
+    const playerList = document.getElementById('player-list');
+    if (!playerList) return;
+    
+    // Remove from players array
+    players = players.filter(p => p.name !== name);
+    
+    // Update the full list to ensure count is correct
+    updatePlayerList();
+    
+    // Play leave sound if enabled
+    if (playJoinSounds) {
+        playOneShot('./assets/audio/player_leave.mp3', 0.1);
+    }
+}
+
+function updatePlayerCount() {
+    const playerList = document.getElementById('player-list');
+    const playerCount = document.getElementById('player-count');
+    const header = playerList?.querySelector('h2');
+    
+    if (!playerList) return;
+    
+    const count = players.length;
+
+    // Update player count display
+    if (playerCount) {
+        playerCount.textContent = `Players: ${count}`;
+    }
+    
+    // Update header if it exists
+    if (header) {
+        header.textContent = `Players (${count})`;
+    }
+}
+
+// Initialize networking callbacks
+networkManager.setCallbacks({
+    onPlayerJoined: (name, skinId, ready) => {
+        addPlayerToList(name, skinId, ready);
+        updatePlayerCount();
+    },
+    onPlayerLeft: (name) => {
+        removePlayerFromList(name);
+        updatePlayerCount();
+    },
+    onReadyStateUpdate: (name, ready) => {
+        const player = players.find(p => p.name === name);
+        if (player) {
+            player.ready = ready;
+            updatePlayerList();
+        }
+    }
+});
+
 // Desktop lobby and settings functionality
 if (!isMobileUser) {
     const settingsModal = document.getElementById('settings-modal');
@@ -142,17 +267,7 @@ if (!isMobileUser) {
     const createLobbyBtn = document.getElementById('create-lobby');
     const lobbyOverlay = document.getElementById('lobby-overlay');
     const roomCodeDisplay = document.getElementById('room-code');
-    const playersContainer = document.getElementById('players-container');
-
-    // Generate random lobby code
-    function generateLobbyCode() {
-        const letters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
-        let code = '';
-        for (let i = 0; i < gameCodeLength; i++) {
-            code += letters.charAt(Math.floor(Math.random() * letters.length));
-        }
-        return code;
-    }
+    const playersContainer = document.getElementById('player-list');
 
     // Settings modal functionality
     function openSettings() {
@@ -175,62 +290,20 @@ if (!isMobileUser) {
             const tabName = button.getAttribute('data-tab');
             document.getElementById(tabName + '-tab').classList.add('active');
         });
-    });
+    });    // Initialize empty player list
+    updatePlayerList();
 
-    // Player management
-    let players = [];
-    let isHost = false;
-
-    function addPlayer(name, skinId, isHostPlayer = false) {
-        if (isHostPlayer) {
-            isHost = true;
-            return; // Don't add host to the player list
-        }
-        players.push({ name, skinId });
-        updatePlayerList();
-    }
-
-    function removePlayer(name) {
-        players = players.filter(p => p.name !== name);
-        updatePlayerList();
-    }
-
-    function updatePlayerList() {
-        playersContainer.innerHTML = '';
-        
-        // Add header with player count
-        const header = document.createElement('h2');
-        header.textContent = `Players (${players.length})`;
-        playersContainer.appendChild(header);
-        
-        players.forEach(player => {
-            const playerItem = document.createElement('div');
-            playerItem.className = 'player-item';
-            
-            const boatImg = document.createElement('img');
-            boatImg.src = `./assets/boats/${player.skinId}/icon.png`;
-            
-            const playerName = document.createElement('span');
-            playerName.textContent = player.name;
-            
-            playerItem.appendChild(boatImg);
-            playerItem.appendChild(playerName);
-            playersContainer.appendChild(playerItem);
-        });
-    }
-
-    // Initialize empty player list
-    updatePlayerList();    // Event listeners
+    // Event listeners
     createLobbyBtn.addEventListener('click', () => {
-        const code = generateLobbyCode();
+        const code = generateRoomCode();
         roomCodeDisplay.textContent = "Room Code: " + code;
         lobbyOverlay.style.display = 'none';
         // Connect to server and create room
-        createRoom(code);
+        networkManager.createRoom(code, skin);
         // Register as host but don't show in player list
         addPlayer('You (Host)', skin, true);
         // Start background music
-        playBackgroundMusic('./assets/audio/background_music.mp3', 0.5);
+        playBackgroundMusic('./assets/audio/background_music.mp3', 0.4);
     });
 
     settingsBtnDesktop.addEventListener('click', openSettings);
@@ -255,106 +328,7 @@ if (!isMobileUser) {
     });
 }
 
-// WebSocket connection handling
-let socket;
-let pingInterval;
-let lastPongReceived;
 
-function connectToServer() {
-    if (socket && socket.connected) {
-        return; // Already connected
-    }
-      socket = io('http://localhost:3000', {
-        reconnectionAttempts: 5,
-        timeout: 10000,
-        transports: ['websocket', 'polling'],
-        forceNew: true,
-        reconnectionDelay: 1000,
-        reconnectionDelayMax: 5000,
-        maxRetries: 3,
-        pingInterval: 25000,
-        pingTimeout: 60000
-    });
-      socket.on('connect', () => {
-        console.log('Connected to server');
-        lastPongReceived = Date.now();
-        
-        // Clear any existing ping interval
-        if (pingInterval) {
-            clearInterval(pingInterval);
-        }
-        
-        // Start ping interval
-        pingInterval = setInterval(() => {
-            if (socket.connected) {
-                socket.emit('ping');
-                // Check if we haven't received a pong in 60 seconds
-                if (Date.now() - lastPongReceived > 60000) {
-                    console.log('Connection lost, attempting to reconnect...');
-                    clearInterval(pingInterval);
-                    socket.disconnect();
-                    setTimeout(() => connectToServer(), 1000);
-                }
-            }
-        }, 25000);
-    });
-
-    socket.on('pong', () => {
-        lastPongReceived = Date.now();
-    });
-
-    socket.on('roomError', (data) => {
-        showError(data.message);
-    });
-
-    socket.on('roomClosed', () => {
-        showError('Host has disconnected');
-        // Return to join screen
-        document.getElementById('join-screen').style.display = 'flex';
-        document.getElementById('game-screen').style.display = 'none';
-    });
-}
-
-// Host-specific WebSocket handling
-function createRoom(roomCode) {
-    if (!socket || !socket.connected) {
-        connectToServer();
-        socket.once('connect', () => {
-            performCreateRoom(roomCode);
-        });
-    } else {
-        performCreateRoom(roomCode);
-    }
-}
-
-function performCreateRoom(roomCode) {
-    console.log('Creating room with code:', roomCode);
-    
-    // Remove any existing listeners first
-    socket.off('playerJoined');
-    socket.off('playerLeft');
-    
-    socket.emit('create-room', { 
-        roomCode: roomCode,
-        hostId: socket.id,
-        hostSkin: skin
-    });
-    
-    // Add new event listeners
-    socket.on('playerJoined', ({ name, skinId }) => {
-        console.log('Player joined:', name);
-        // Update player list in UI
-        addPlayerToList(name, skinId);
-        updatePlayerCount();
-    });
-    
-    socket.on('playerLeft', ({ name }) => {
-        console.log('Player left:', name);
-        // Remove player from UI
-        removePlayerFromList(name);
-        updatePlayerCount();
-    });
-}
 
 // Get a random join sound file path
 function getRandomJoinSound() {
@@ -366,28 +340,22 @@ function getRandomJoinSound() {
     return joinSounds[Math.floor(Math.random() * joinSounds.length)];
 }
 
-function addPlayerToList(name, skinId) {
+function addPlayerToList(name, skinId, ready = false) {
     const playerList = document.getElementById('player-list');
     if (!playerList) return;
     
-    const playerItem = document.createElement('div');
-    playerItem.className = 'player-item';
-    playerItem.dataset.name = name;
+    // Add to players array
+    players.push({ name, skinId, ready });
     
-    const playerIcon = document.createElement('img');
-    playerIcon.src = `./assets/boats/${skinId}/icon.png`;
+    // Update the full list to ensure count is correct
+    updatePlayerList();
     
-    const playerName = document.createElement('span');
-    playerName.textContent = name;
-    
-    playerItem.appendChild(playerIcon);
-    playerItem.appendChild(playerName);
-    playerList.appendChild(playerItem);
-    
-    // Add highlight animation
-    playerItem.classList.add('highlight');
-    // Remove highlight class after animation completes
-    setTimeout(() => playerItem.classList.remove('highlight'), 2000);
+    // Find the new player's item and add highlight
+    const playerItem = playerList.querySelector(`[data-name="${name}"]`);
+    if (playerItem) {
+        playerItem.classList.add('highlight');
+        setTimeout(() => playerItem.classList.remove('highlight'), 2000);
+    }
     
     // Play random join sound if enabled
     if (playJoinSounds) {
@@ -399,23 +367,29 @@ function removePlayerFromList(name) {
     const playerList = document.getElementById('player-list');
     if (!playerList) return;
     
-    const playerItem = playerList.querySelector(`[data-name="${name}"]`);
-    if (playerItem) {
-        // Play leave sound if enabled
-        if (playJoinSounds) {
-            playOneShot('./assets/audio/player_leave.mp3', 0.1);
-        }
-        playerItem.remove();
+    // Remove from players array
+    players = players.filter(p => p.name !== name);
+    
+    // Update the full list to ensure count is correct
+    updatePlayerList();
+    
+    // Play leave sound if enabled
+    if (playJoinSounds) {
+        playOneShot('./assets/audio/player_leave.mp3', 0.1);
     }
 }
 
 function updatePlayerCount() {
     const playerList = document.getElementById('player-list');
     const playerCount = document.getElementById('player-count');
+    const header = document.querySelector('#players-container h2');
     if (!playerList || !playerCount) return;
     
-    const count = playerList.children.length;
+    const count = players.length;
     playerCount.textContent = `Players: ${count}`;
+    if (header) {
+        header.textContent = `Players (${count})`;
+    }
 }
 
 // Device detection for different modes
@@ -428,11 +402,10 @@ function initializeGameMode() {
     } else {
         // Desktop host mode - throwing errors
         //document.getElementById('join-screen').style.display = 'none';
-        //document.getElementById('host-controls').style.display = 'flex';
-        // Generate and display room code
+        //document.getElementById('host-controls').style.display = 'flex';        // Generate and display room code
         const roomCode = generateRoomCode();
         document.getElementById('room-code').textContent = "Room Code: " + roomCode;
-        createRoom(roomCode);
+        networkManager.createRoom(roomCode, skin);
     }
 }
 
@@ -441,48 +414,7 @@ function generateRoomCode() {
 }
 
 
-// Join room function
-function joinRoom(roomCode, playerName, skinId) {
-    if (!socket || !socket.connected) {
-        connectToServer();
-        
-        // Wait for connection before joining
-        socket.once('connect', () => {
-            performJoin(roomCode, playerName, skinId);
-        });
-    } else {
-        performJoin(roomCode, playerName, skinId);
-    }
-}
 
-function performJoin(roomCode, playerName, skinId) {
-    console.log('Attempting to join room:', roomCode);
-    showError('Joining room...');
-    
-    socket.emit('join-room', {
-        roomCode: roomCode.toUpperCase(),
-        name: playerName,
-        skinId: skinId,
-        clientId: socket.id
-    });
-
-    // Set up handlers for room join process
-    socket.once('joinSuccess', (data) => {
-        console.log('Successfully joined room:', data);
-        showError('Successfully joined room!');
-        // Hide join UI elements
-        document.getElementById('game-code').style.display = 'none';
-        document.getElementById('join-button').style.display = 'none';
-    });
-
-    socket.once('roomError', (error) => {
-        console.error('Room join error:', error);
-        showError(error.message || 'Failed to join room');
-        // Re-enable join UI
-        document.getElementById('game-code').style.display = '';
-        document.getElementById('join-button').style.display = '';
-    });
-}
 
 function showError(message) {
     const errorDiv = document.getElementById('error-message');
@@ -615,11 +547,15 @@ themePicker.addEventListener('change', function(event) {
 
 let nextSkin = document.getElementById("skin-next");
 nextSkin.addEventListener('click', function(event) {
+    if (isReady) {
+        event.preventDefault();
+        return;
+    }
     skin++;
     if (skin >= SKIN_COUNT) {
         skin = 1;
     }
-    document.cookie = "cosmetic=" + skin;
+    document.cookie = "skin=" + skin;
     document.getElementById("skin-id").innerHTML = "Skin #" + skin;
     document.getElementById("boat_ur").src = './assets/boats/' + skin + '/ur.png';
     document.getElementById("boat_ul").src = './assets/boats/' + skin + '/ul.png';
@@ -629,11 +565,15 @@ nextSkin.addEventListener('click', function(event) {
 
 let backSkin = document.getElementById("skin-back");
 backSkin.addEventListener('click', function(event) {
+    if (isReady) {
+        event.preventDefault();
+        return;
+    }
     skin--;
     if (skin < 1) {
         skin = SKIN_COUNT;
     }
-    document.cookie = "cosmetic=" + skin;
+    document.cookie = "skin=" + skin;
     document.getElementById("skin-id").innerHTML = "Skin #" + skin;
     document.getElementById("boat_ur").src = './assets/boats/' + skin + '/ur.png';
     document.getElementById("boat_ul").src = './assets/boats/' + skin + '/ul.png';
@@ -671,7 +611,7 @@ joinButton.addEventListener('click', function() {
     const roomCode = gameCodeInput.value.toUpperCase();
     if (roomCode.length === gameCodeLength) {
         const nickname = nicknameInput.value.trim() || getRandomSillyName();
-        joinRoom(roomCode, nickname, skin);
+        networkManager.joinRoom(roomCode, nickname, skin);
     }
 });
 
@@ -711,6 +651,105 @@ if (!isMobileUser) {
     playJoinSoundsToggle.addEventListener('change', (e) => {
         playJoinSounds = e.target.checked;
         document.cookie = `playJoinSounds=${playJoinSounds ? "1" : "0"}`;
+    });
+}
+
+// Ready state handling
+let isReady = false;
+const readyButton = document.getElementById('ready-button');
+const skinBack = document.getElementById('skin-back');
+const skinNext = document.getElementById('skin-next');
+
+if (readyButton) {
+    readyButton.addEventListener('click', function() {
+        isReady = !isReady;
+        //readyButton.textContent = isReady ? 'Not Ready' : 'Ready';
+        readyButton.style.backgroundColor = isReady ? '#44AA44' : '#664444';
+          // Disable/enable controls based on ready state
+        skinBack.classList.toggle('disabled', isReady);
+        skinNext.classList.toggle('disabled', isReady);
+        nicknameInput.disabled = isReady;
+        
+        networkManager.setReadyState(isReady);
+    });
+}
+
+// Disable skin change when ready
+skinBack.addEventListener('click', function(event) {
+    if (isReady) {
+        event.preventDefault();
+        return;
+    }
+    // ...existing code...
+});
+
+skinNext.addEventListener('click', function(event) {
+    if (isReady) {
+        event.preventDefault();
+        return;
+    }
+    // ...existing code...
+});
+
+// Player functions are now global
+// performJoin implementation
+function performJoin(roomCode, playerName, skinId) {
+    console.log('Attempting to join room:', roomCode);
+    showError('Joining room...');
+    
+    socket.emit('join-room', {
+        roomCode: roomCode.toUpperCase(),
+        name: playerName,
+        skinId: skinId,
+        clientId: socket.id
+    });
+
+    // Set up handlers for room join process
+    socket.once('joinSuccess', (data) => {
+        console.log('Successfully joined room:', data);
+        showError('Successfully joined room!');
+        // Hide join UI elements
+        document.getElementById('game-code').style.display = 'none';
+        document.getElementById('join-button').style.display = 'none';
+        document.getElementById('ready-button').style.display = 'inline-flex';
+    });
+    
+    socket.once('roomError', (error) => {
+        console.error('Room join error:', error);
+        showError(error.message || 'Failed to join room');
+        // Re-enable join UI
+        document.getElementById('game-code').style.display = '';
+        document.getElementById('join-button').style.display = '';
+        document.getElementById('ready-button').style.display = 'none';
+    });
+}
+
+// Update createRoom to handle ready state updates
+function performCreateRoom(roomCode) {
+    console.log('Creating room with code:', roomCode);
+    
+    // Remove any existing listeners first
+    socket.off('playerJoined');
+    socket.off('playerLeft');
+    
+    socket.emit('create-room', { 
+        roomCode: roomCode,
+        hostId: socket.id,
+        hostSkin: skin
+    });
+    
+    socket.on('playerJoined', ({ name, skinId, ready }) => {
+        console.log('Player joined:', name);
+        // Update player list in UI
+        addPlayerToList(name, skinId, ready);
+        updatePlayerCount();
+    });
+    
+    socket.on('playerLeft', ({ name }) => {
+        console.log('Player left:', name);
+        // Remove player from UI
+        removePlayerFromList(name);
+        updatePlayerCount();
     });
 }
 

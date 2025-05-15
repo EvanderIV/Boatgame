@@ -17,25 +17,25 @@
 	<div id="room-code" class="desktop-only darkable themeable retro"></div>
 	<div class="game-container">
 		<div id="player-list" class="desktop-only darkable themeable retro">
-			<h2>Players</h2>
 			<div id="players-container"></div>
 		</div>
 		<div id="root" class="root flex column">
 			<div id="sqr">
-				<img id="boat_ur" class="mobile-only playerBoat" width="30%" height="auto" src="./img/boat_0_ur.png" style="left: 49.9%; top: 18.01cqw; z-index: 10;">
-				<img id="boat_ul" class="mobile-only playerBoat" width="30%" height="auto" src="./img/boat_0_ul.png" style="left: 20%; top: 18.01cqw; z-index: 10;">
-				<img id="boat_ll" class="mobile-only playerBoat" width="30%" height="auto" src="./img/boat_0_ll.png" style="left: 20%; top: 48cqw; z-index: 10;">
-				<img id="boat_lr" class="mobile-only playerBoat" width="30%" height="auto" src="./img/boat_0_lr.png" style="left: 49.9%; top: 48cqw; z-index: 10;">
+				<img id="boat_ur" class="mobile-only playerBoat" width="30%" height="auto" src="./assets/boats/1/ur.png" style="left: 49.9%; top: 18.01cqw; z-index: 10;">
+				<img id="boat_ul" class="mobile-only playerBoat" width="30%" height="auto" src="./assets/boats/1/ul.png" style="left: 20%; top: 18.01cqw; z-index: 10;">
+				<img id="boat_ll" class="mobile-only playerBoat" width="30%" height="auto" src="./assets/boats/1/ll.png" style="left: 20%; top: 48cqw; z-index: 10;">
+				<img id="boat_lr" class="mobile-only playerBoat" width="30%" height="auto" src="./assets/boats/1/lr.png" style="left: 49.9%; top: 48cqw; z-index: 10;">
 			</div>
 			<input id="nickname" class="mobile-only single-line-textarea darkable themeable retro" style="margin-top: 16cqw; height: 8cqw; width: 60%;" type="text" name="nickname-input" placeholder="Nickname" maxlength="20"></input>
 			<input id="game-code" class="input-uppercase mobile-only single-line-textarea darkable themeable retro" style="margin-top: 2cqw; height: 8cqw;" type="search" name="game-code-input" placeholder="Room Code" maxlength="4"></input>
 			<button id="join-button" class="mobile-only darkable themeable retro" disabled style="margin-top: 1cqw; height: 6cqw;">JOIN</button>
+			<button id="ready-button" class="mobile-only darkable themeable retro" style="font-size: 2rem; width: 40%; height: 6cqw;">Ready</button>
 			<p id="settings-button" class="mobile-only darkable themeable retro">SETTINGS</p>
 			<div id="settings-div" class="mobile-only darkable themeable retro">
 				<audio id="settings-open-sfx" src="./audio/paper_slide_in.mp3"></audio>
 				<audio id="settings-close-sfx" src="./audio/paper_slide_out.mp3"></audio>
 				<div class="flex flex-center" style="position: fixed; margin-top: 3%; width: 100%">
-					<p id="skin-id" class="darkable" style="position: inline;">Skin #0</p>
+					<p id="skin-id" class="darkable" style="position: inline;">Skin #1</p>
 				</div>
 				<img src="./img/arrow_retro.png" id="skin-back" class="darkable themeable" width="10%" height="auto" style="position: fixed; margin-top: 7%; left: 21%; transform: rotate(180deg)">
 				<img src="./img/arrow_retro.png" id="skin-next" class="darkable themeable" width="10%" height="auto" style="position: fixed; margin-top: 7%; left: 70%;">
@@ -95,6 +95,7 @@
 	</div>
 </body>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.3.0/socket.io.js"></script>
+<script src="./js/networking.js"></script>
 <script src="./js/index.js"></script>
 </html>
 

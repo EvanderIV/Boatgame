@@ -194,6 +194,13 @@ body.darkable.darkmode {
 	padding: 5px 10px;
 }
 
+#ready-button:active {
+	border: 2px solid #000000;
+	background-color: #33CCFF;
+	color: #ffffff;
+	padding: 5px 10px;
+}
+
 #join-button:disabled,
 #join-button[disabled] {
 	border: 2px solid #999999;
@@ -210,6 +217,38 @@ body.darkable.darkmode {
 	background-color: #666666;
 	color: #FFFFFF;
 }
+
+
+
+
+#ready-button {
+	margin: 0 auto;
+	display: none;
+	align-items: center;
+	justify-content: center;
+	text-align: center;
+	border: 2px solid #0088CC;
+	background-color: #5CCEff;
+	color: #ffffff;
+	padding: 5px 10px;
+	transition: all 0.2s ease;
+	border-radius: 4cqw;
+	width: 35%;
+	font-size: 3rem;
+	margin-top: 3%;
+}
+
+#ready-button.retro {
+	font-family: "blocky";
+	font-size: 4rem;
+}
+
+#ready-button.darkmode {
+	color: #FFFFFF;
+}
+
+
+
 
 
 #settings-button {
@@ -699,6 +738,78 @@ input[type="range"].retro::-webkit-slider-thumb {
 
 .setting-item input:checked + .slider:before {
     transform: translateX(25px);
+}
+
+.ready-checkbox {
+    width: 20px;
+    height: 20px;
+    border: 2px solid #666;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    margin-left: 10px;
+    color: #22BBFF;
+    font-weight: bold;
+}
+
+.ready-checkbox.retro {
+    border-radius: 0;
+}
+
+.ready-checkbox.modern {
+    border-radius: 4px;
+}
+
+.ready-checkbox.checked {
+    background-color: #FFFFFF;
+}
+
+.ready-checkbox.checked.darkmode {
+    background-color: #444444;
+    border-color: #22BBFF;
+}
+
+/* Gray out skin selector arrows when ready */
+#skin-back.disabled,
+#skin-next.disabled {
+    opacity: 0.3;
+    cursor: not-allowed;
+}
+
+#ready-button {
+    background-color: #22BBFF;
+    border: 2px solid #0088CC;
+    color: #FFFFFF;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+#ready-button.retro {
+    font-family: "blocky";
+    border-radius: 0;
+}
+
+#ready-button.modern {
+    border-radius: 4px;
+}
+
+#ready-button:hover {
+    background-color: #33CCFF;
+}
+
+#ready-button.not-ready {
+    background-color: #FF4444;
+    border-color: #CC0000;
+}
+
+#ready-button.not-ready:hover {
+    background-color: #FF5555;
+}
+
+/* Disabled controls when ready */
+input:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
 }
 
 
