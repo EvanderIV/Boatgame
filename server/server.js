@@ -1,6 +1,14 @@
+const CERT_PATH = process.env.CERT_PATH || '/etc/letsencrypt/live/eminich.com/fullchain.pem';
+const KEY_PATH = process.env.KEY_PATH || '/etc/letsencrypt/live/eminich.com/privkey.pem';
+const options = {
+  key: fs.readFileSync(CERT_PATH),
+  cert: fs.readFileSync(KEY_PATH),
+};
+
 const express = require('express');
 const app = express();
-const http = require('http').createServer(app);
+const http = require('http').createServer(options, app);
+
 const io = require('socket.io')(http, {
     cors: {
         origin: "eminich.com",
