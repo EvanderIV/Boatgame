@@ -1,15 +1,16 @@
 const CERT_PATH = process.env.CERT_PATH || '/etc/letsencrypt/live/eminich.com/fullchain.pem';
 const KEY_PATH = process.env.KEY_PATH || '/etc/letsencrypt/live/eminich.com/privkey.pem';
+const fs = require('fs');
 const options = {
-  key: fs.readFileSync(CERT_PATH),
-  cert: fs.readFileSync(KEY_PATH),
+  key: fs.readFileSync(KEY_PATH),
+  cert: fs.readFileSync(CERT_PATH),
 };
 
 const express = require('express');
 const app = express();
-const http = require('http').createServer(options, app);
+const https = require('https').createServer(options, app);
 
-const io = require('socket.io')(http, {
+const io = require('socket.io')(https, {
     cors: {
         origin: "eminich.com",
         methods: ["GET", "POST"]
@@ -170,6 +171,6 @@ io.on('connection', client => {
 });
 
 const PORT = process.env.PORT || 3000;
-http.listen(PORT, () => {
+https.listen(PORT, () => {
     console.log(`Server running on port ${PORT}`);
 });
