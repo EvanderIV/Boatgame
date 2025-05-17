@@ -402,15 +402,28 @@ function getRandomJoinSound() {
     return joinSounds[Math.floor(Math.random() * joinSounds.length)];
 }
 
+// Audio tracking to prevent repeats
+let lastCountdownSound = '';
+
 function getRandomCountdownSound() {
-    const joinSounds = [
+    const countdownSounds = [
         './assets/audio/game_countdown_1.mp3',
         './assets/audio/game_countdown_2.mp3',
         './assets/audio/game_countdown_3.mp3',
         './assets/audio/game_countdown_4.mp3',
         './assets/audio/game_countdown_5.mp3'
     ];
-    return joinSounds[Math.floor(Math.random() * joinSounds.length)];
+    
+    // Filter out the last played sound
+    const availableSounds = countdownSounds.filter(sound => sound !== lastCountdownSound);
+    
+    // Pick a random sound from the remaining options
+    const selectedSound = availableSounds[Math.floor(Math.random() * availableSounds.length)];
+    
+    // Store this as the last played sound
+    lastCountdownSound = selectedSound;
+    
+    return selectedSound;
 }
 
 function getRandomStartSound() {
