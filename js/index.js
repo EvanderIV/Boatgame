@@ -271,7 +271,7 @@ networkManager.setCallbacks({
             
             // Handle countdown for host
             if (isHost) {
-                if (checkAllPlayersReady() && players.length >= 1) {
+                if (checkAllPlayersReady() && players.length > 1) {
                     startCountdown();
                 } else if (!ready) {
                     cancelCountdown();

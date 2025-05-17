@@ -92,7 +92,8 @@ io.on('connection', client => {
         lastPing = Date.now();
     });
 
-    // Handle ready state changes    client.on('ready-state-change', (data) => {
+    // Handle ready state changes
+    client.on('ready-state-change', (data) => {
         if (!roomCode) return;
 
         const room = activeRooms.get(roomCode);
