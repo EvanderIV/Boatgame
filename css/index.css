@@ -13,6 +13,18 @@
 	justify-content: center;
 }
 
+@keyframes borderSpin {
+    0% { clip-path: polygon(0 0, 100% 0, 100% 10%, 0 10%); }
+    12.5% { clip-path: polygon(90% 0, 100% 0, 100% 100%, 90% 100%); }
+    25% { clip-path: polygon(0 90%, 100% 90%, 100% 100%, 0 100%); }
+    37.5% { clip-path: polygon(0 0, 10% 0, 10% 100%, 0 100%); }
+    50% { clip-path: polygon(0 0, 100% 0, 100% 10%, 0 10%); }
+    62.5% { clip-path: polygon(90% 0, 100% 0, 100% 100%, 90% 100%); }
+    75% { clip-path: polygon(0 90%, 100% 90%, 100% 100%, 0 100%); }
+    87.5% { clip-path: polygon(0 0, 10% 0, 10% 100%, 0 100%); }
+    100% { clip-path: polygon(0 0, 100% 0, 100% 10%, 0 10%); }
+}
+
 .right {
 	float: right;
 }
@@ -77,6 +89,7 @@ body.darkable.darkmode {
 	margin: 0 auto;
 	font-size: 4rem;
 	text-align: center;
+    z-index: 100;
 }
 
 ::placeholder {
@@ -97,6 +110,7 @@ body.darkable.darkmode {
 	margin: 0 auto;
 	font-size: 3rem;
 	text-align: center;
+    z-index: 100;
 }
 
 #nickname.retro {
@@ -178,6 +192,7 @@ body.darkable.darkmode {
 	border-radius: 4cqw;
 	width: 35%;
 	font-size: 3rem;
+    z-index: 100;
 }
 
 #join-button.retro {
@@ -193,14 +208,12 @@ body.darkable.darkmode {
 	border: 2px solid #000000;
 	background-color: #33CCFF;
 	color: #ffffff;
-	padding: 5px 10px;
 }
 
 #ready-button:active {
 	border: 2px solid #000000;
 	background-color: #33CCFF;
 	color: #ffffff;
-	padding: 5px 10px;
 }
 
 #join-button:disabled,
@@ -220,41 +233,79 @@ body.darkable.darkmode {
 	color: #FFFFFF;
 }
 
-
-
-
 #ready-button {
-	margin: 0 auto;
-	display: none;
-	align-items: center;
-	justify-content: center;
-	text-align: center;
-	border: 2px solid #0088CC;
-	background-color: #5CCEff;
-	color: #ffffff;
-	padding: 5px 10px;
-	transition: all 0.2s ease;
-	border-radius: 4cqw;
-	width: 35%;
-	font-size: 3rem;
-	margin-top: 3%;
+    isolation: isolate;
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    margin: 0;
+    line-height: 1.1;
+    overflow: visible;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    border: 2px solid #0088CC;
+    background-color: #5CCEff;
+    color: #ffffff;
+    transition: all 0.2s ease;
+    cursor: pointer;
 }
 
-#ready-button.retro {
-	font-family: "blocky";
-	font-size: 4rem;
-}
-
-#ready-button.darkmode {
-	color: #FFFFFF;
-}
-
-#ready-button:disabled {
+#ready-button[aria-disabled="true"] {
     background-color: #CCCCCC;
     border-color: #999999;
     color: #666666;
     cursor: not-allowed;
     opacity: 0.7;
+    pointer-events: none;
+}
+
+#ready-button .ready-text {
+    font-size: 3rem;
+    margin: 0;
+}
+
+#ready-button:hover:not([aria-disabled="true"]) {
+    background-color: #33CCFF;
+}
+
+/* Circling border animation */
+#ready-button:not([aria-disabled="true"]):not([style*="background-color: rgb(68, 170, 68)"]):not([style*="background-color: #44AA44"])::before {
+    content: '';
+    position: absolute;
+    inset: -1vmin;
+    border: 1vmin solid #22BBFF;
+    border-radius: inherit;
+    opacity: 0.8;
+    clip-path: polygon(0 0, 100% 0, 100% 10%, 0 10%);
+    animation: borderSpin 3s linear infinite;
+    z-index: -1;
+    pointer-events: none;
+}
+
+#ready-button.retro {
+    border-radius: 0;
+}
+
+#ready-button.retro .ready-text {
+    font-family: "blocky";
+    font-size: 4rem;
+}
+
+#ready-button.darkmode {
+    color: #FFFFFF;
+}
+
+#ready-button.darkmode[aria-disabled="true"] {
+    background-color: #444444;
+    border-color: #222222;
+    color: #888888;
+}
+
+#ready-button:focus-visible {
+    outline: 3px solid #22BBFF;
+    outline-offset: 2px;
 }
 
 #ready-button.not-ready {
@@ -262,19 +313,18 @@ body.darkable.darkmode {
     border-color: #CC0000;
 }
 
-#ready-button.not-ready:hover {
+#ready-button.not-ready:hover:not([aria-disabled="true"]) {
     background-color: #FF5555;
 }
 
-#ready-button.darkmode:disabled {
-    background-color: #444444;
-    border-color: #222222;
-    color: #888888;
+#ready-button[aria-disabled="true"] + .ready-text {
+    color: #666666;
+    opacity: 0.7;
 }
 
-
-
-
+#ready-button.darkmode[aria-disabled="true"] + .ready-text {
+    color: #888888;
+}
 
 #settings-button {
 	border: 2px solid #999999;
@@ -284,7 +334,7 @@ body.darkable.darkmode {
 	color: #666666;
 	border-radius: 4cqw 4cqw 0 0;
 	width: 40%;
-	height: 10%;
+	height: 15vmin;
 	margin-left: auto;
 	position: fixed;
 	top: 90%;
@@ -310,7 +360,7 @@ body.darkable.darkmode {
 	color: #666666;
 	border-radius: 2cqw 2cqw 0 0;
 	width: 100%;
-	height: 25%;
+	height: 15%;
 	position: fixed;
 	top: 100%;
 	transition: all 0.2s ease;
@@ -381,7 +431,7 @@ input:checked + .slider:before {
 
 #skin-back {
     position: absolute;
-    margin-top: 7%;
+    margin-top: 1%;
     left: 21%;
     width: 10%;
     height: auto;
@@ -396,7 +446,7 @@ input:checked + .slider:before {
 
 #skin-next {
     position: absolute;
-    margin-top: 7%;
+    margin-top: 1%;
     left: 70%;
     width: 10%;
     height: auto;
@@ -589,6 +639,7 @@ input:checked + .slider:before {
 	background-color: #a9e5ff;
 	border-radius: 8px;
 	transition: all 0.2s ease;
+    z-index: 100;
 }
 
 #room-code.darkmode {
@@ -698,6 +749,17 @@ input:checked + .slider:before {
     width: 32px;
     height: 32px;
     object-fit: contain;
+}
+
+#game-title {
+    color: #FFFFFF;
+    font-size: 1rem;
+    margin: 0;
+}
+
+#game-title.retro {
+    font-family: "blocky";
+    font-size: 1.5rem;
 }
 
 #error-message {
@@ -831,49 +893,7 @@ input[type="range"].retro::-webkit-slider-thumb {
     cursor: not-allowed;
 }
 
-#ready-button {
-    background-color: #22BBFF;
-    border: 2px solid #0088CC;
-    color: #FFFFFF;
-    cursor: pointer;
-    transition: all 0.2s ease;
-}
 
-#ready-button.retro {
-    font-family: "blocky";
-    border-radius: 0;
-}
-
-#ready-button.modern {
-    border-radius: 4px;
-}
-
-#ready-button:hover {
-    background-color: #33CCFF;
-}
-
-#ready-button.not-ready {
-    background-color: #FF4444;
-    border-color: #CC0000;
-}
-
-#ready-button.not-ready:hover {
-    background-color: #FF5555;
-}
-
-#ready-button:disabled {
-    background-color: #CCCCCC;
-    border-color: #999999;
-    color: #666666;
-    cursor: not-allowed;
-    opacity: 0.7;
-}
-
-#ready-button.darkmode:disabled {
-    background-color: #444444;
-    border-color: #222222;
-    color: #888888;
-}
 
 /* Disabled controls when ready */
 input:disabled {
@@ -1080,6 +1100,66 @@ input:disabled {
 /* Show arrows when game is joined */
 .game-joined .direction-arrow {
     opacity: 0.5;
+}
+
+@keyframes borderSpin {
+    0% {
+        clip-path: polygon(0 0, 100% 0, 100% 10%, 0 10%);
+    }
+    12.5% {
+        clip-path: polygon(90% 0, 100% 0, 100% 100%, 90% 100%);
+    }
+    25% {
+        clip-path: polygon(0 90%, 100% 90%, 100% 100%, 0 100%);
+    }
+    37.5% {
+        clip-path: polygon(0 0, 10% 0, 10% 100%, 0 100%);
+    }
+    50% {
+        clip-path: polygon(0 0, 100% 0, 100% 10%, 0 10%);
+    }
+    62.5% {
+        clip-path: polygon(90% 0, 100% 0, 100% 100%, 90% 100%);
+    }
+    75% {
+        clip-path: polygon(0 90%, 100% 90%, 100% 100%, 0 100%);
+    }
+    87.5% {
+        clip-path: polygon(0 0, 10% 0, 10% 100%, 0 100%);
+    }
+    100% {
+        clip-path: polygon(0 0, 100% 0, 100% 10%, 0 10%);
+    }
+}
+
+.ready-wrapper {
+    position: relative;
+    width: 40%;
+    height: 10vmin;
+    margin: 3% auto 0;
+}
+
+.ready-text {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0;
+    font-size: 3rem;
+    color: #ffffff;
+    pointer-events: none;
+    z-index: 1;
+}
+
+.ready-text.retro {
+    font-family: "blocky";
+    font-size: 4rem;
+}
+
+.ready-text.darkmode {
+    color: #FFFFFF;
 }
 
 

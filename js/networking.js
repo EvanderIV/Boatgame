@@ -6,6 +6,7 @@ let onPlayerJoined;
 let onPlayerLeft;
 let onReadyStateUpdate;
 let onPlayerInfoUpdate;
+let onGameStarting;
 
 function connectToServer() {
     if (socket && socket.connected) {
@@ -53,13 +54,37 @@ function connectToServer() {
 
     socket.on('roomError', (data) => {
         showError(data.message);
-    });
-
-    socket.on('roomClosed', () => {
+    });    socket.on('roomClosed', () => {
+        document.getElementById('error-message').style.marginTop = "50vmin";
+        document.getElementById('error-message').style.color = "#FF0000";
         showError('Host has disconnected');
-        // Return to join screen
-        document.getElementById('join-screen').style.display = 'flex';
-        document.getElementById('game-screen').style.display = 'none';
+        
+        // Reset UI elements
+        document.getElementById('game-code').style.display = '';
+        document.getElementById('join-button').style.display = '';
+        document.getElementById('ready-button').style.display = 'none';
+        document.getElementById('ready-text').style.display = 'none';
+        
+        // Hide suit squares and reset them
+        const suitSquares = document.getElementById('suit-squares');
+        if (suitSquares) {
+            suitSquares.classList.remove('show');
+            // Return squares to grid
+            document.querySelectorAll('.suit-square').forEach(square => {
+                if (square.classList.contains('placed')) {
+                    square.classList.remove('placed');
+                    square.style.position = '';
+                    square.style.left = '';
+                    square.style.top = '';
+                }
+            });
+        }
+        
+        // Hide directional arrows by removing game-joined class
+        const root = document.getElementById('root');
+        if (root) {
+            root.classList.remove('game-joined');
+        }
     });
 
     // Add ready state update handler in a single location
@@ -73,6 +98,13 @@ function connectToServer() {
     socket.on('player-info-update', ({ oldName, newName, newSkin }) => {
         if (onPlayerInfoUpdate) {
             onPlayerInfoUpdate(oldName, newName, newSkin);
+        }
+    });
+
+    // Add game starting handler
+    socket.on('gameStarting', () => {
+        if (onGameStarting) {
+            onGameStarting();
         }
     });
 }
@@ -148,11 +180,14 @@ function performJoin(roomCode, playerName, skinId) {
     // Set up handlers for room join process
     socket.once('joinSuccess', (data) => {
         console.log('Successfully joined room:', data);
+        document.getElementById('error-message').style.marginTop = "90vmin";
+        document.getElementById('error-message').style.color = "#AAFFAA";
         showError('Successfully joined room!');
         // Hide join UI elements
         document.getElementById('game-code').style.display = 'none';
         document.getElementById('join-button').style.display = 'none';
         document.getElementById('ready-button').style.display = 'inline-flex';
+        document.getElementById('ready-text').style.display = 'flex';
         const suitSquares = document.getElementById('suit-squares');
         const root = document.getElementById('root');
         if (suitSquares) {
@@ -165,11 +200,14 @@ function performJoin(roomCode, playerName, skinId) {
     
     socket.once('roomError', (error) => {
         console.error('Room join error:', error);
+        document.getElementById('error-message').style.marginTop = "50vmin";
+        document.getElementById('error-message').style.color = "#FF0000";
         showError(error.message || 'Failed to join room');
         // Re-enable join UI
         document.getElementById('game-code').style.display = '';
         document.getElementById('join-button').style.display = '';
         document.getElementById('ready-button').style.display = 'none';
+        document.getElementById('ready-text').style.display = 'none';
     });
 }
 
@@ -216,5 +254,6 @@ window.networkManager = {
         onPlayerLeft = callbacks.onPlayerLeft;
         onReadyStateUpdate = callbacks.onReadyStateUpdate;
         onPlayerInfoUpdate = callbacks.onPlayerInfoUpdate;
+        onGameStarting = callbacks.onGameStarting;
     }
 };

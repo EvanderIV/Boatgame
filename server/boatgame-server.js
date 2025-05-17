@@ -92,10 +92,9 @@ io.on('connection', client => {
         lastPing = Date.now();
     });
 
-    // Handle ready state changes
-    client.on('ready-state-change', (data) => {
+    // Handle ready state changes    client.on('ready-state-change', (data) => {
         if (!roomCode) return;
-        
+
         const room = activeRooms.get(roomCode);
         if (!room) return;
 
@@ -103,8 +102,8 @@ io.on('connection', client => {
         if (!playerData) return;
 
         playerData.ready = data.ready;
-        // Notify host about ready state change
-        io.to(room.hostId).emit('ready-state-update', {
+        // Notify all clients about ready state change
+        io.to(roomCode).emit('ready-state-update', {
             name: playerData.name,
             ready: data.ready
         });

@@ -11,7 +11,8 @@
 <body class="darkable">
 	<div id="lobby-overlay" class="desktop-only">
 		<img id="game-logo" class="desktop-only" src="./img/boatgame_icon.png" alt="BoatGame Logo">
-		<button id="create-lobby" class="desktop-only darkable themeable retro">CREATE PUBLIC LOBBY</button>
+		<p id="game-title" class="desktop-only darkable themeable retro">An original game by xleph</p>
+		<button id="create-lobby" class="desktop-only themeable retro">CREATE PUBLIC LOBBY</button>
 	</div>
 	<div id="room-code" class="desktop-only darkable themeable retro"></div>
 	<div class="game-container">
@@ -47,23 +48,26 @@
 			<input id="game-code" class="input-uppercase mobile-only single-line-textarea darkable themeable retro" style="margin-top: 2cqw; height: 8cqw;" type="search" name="game-code-input" placeholder="Room Code" maxlength="4"></input>
 			<button id="join-button" class="mobile-only darkable themeable retro" disabled style="margin-top: 1cqw; height: 6cqw;">JOIN</button>
 			<div id="error-message"></div>
-			<button id="ready-button" class="mobile-only darkable themeable retro" style="font-size: 2rem; width: 40%; height: 6cqw;" disabled>Ready</button>
+			<div class="ready-wrapper mobile-only">
+				<div id="ready-button" class="darkable themeable retro" role="button" tabindex="0" aria-disabled="true" style="display: none;"></div>
+				<p id="ready-text" class="ready-text darkable themeable retro" style="z-index: 2000; display: none;">Ready</p>
+			</div>
 			<p id="settings-button" class="mobile-only darkable themeable retro">SETTINGS</p>
 			<div id="settings-div" class="mobile-only darkable themeable retro">
 				<audio id="settings-open-sfx" src="./audio/paper_slide_in.mp3"></audio>
 				<audio id="settings-close-sfx" src="./audio/paper_slide_out.mp3"></audio>
 				<div class="flex flex-center" style="position: fixed; margin-top: 3%; width: 100%">
-					<p id="skin-id" class="darkable" style="position: inline;">Skin #1</p>
+					<p id="skin-id" class="darkable" style="position: inline; margin-top: 1%;">Skin #1</p>
 				</div>
 				<img src="./img/arrow_retro.png" id="skin-back" class="darkable themeable">
 				<img src="./img/arrow_retro.png" id="skin-next" class="darkable themeable">
-				<p class="darkable" style="position: fixed; margin-top: 20%; left: 30%;">Dark Mode</p>
-				<label class="toggle" style="position: fixed; margin-top: 20%; left: 59%;">
+				<p class="darkable" style="position: fixed; margin-top: 12%; left: 30%;">Dark Mode</p>
+				<label class="toggle" style="position: fixed; margin-top: 12%; left: 59%;">
 					<input type="checkbox" id="dark-mode-toggle" name="btnToggle" />
 					<span id="dark-mode-slider" class="slider themeable retro"></span>
 				</label>
-				<p class="darkable" style="position: fixed; margin-top: 30%; left: 30%;">Theme</p>
-				<select id="theme-picker" style="font-size: 2rem; width: 20cqw; height: 6cqw; position: fixed; margin-top: 29.5%; left: 49%;">
+				<p class="darkable" style="position: fixed; margin-top: 20%; left: 30%;">Theme</p>
+				<select id="theme-picker" style="font-size: 2rem; width: 20cqw; height: 6cqw; position: fixed; margin-top: 19.5%; left: 49%;">
 					<option value="retro">Retro</option>
 					<option value="modern">Modern</option>
 					<option value="red">Crimson</option>

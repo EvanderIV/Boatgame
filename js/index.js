@@ -1,3 +1,10 @@
+// Helper function to set cookies with 6-month expiration
+function setCookie(name, value) {
+    const sixMonths = new Date();
+    sixMonths.setMonth(sixMonths.getMonth() + 6);
+    document.cookie = `${name}=${value}; expires=${sixMonths.toUTCString()}; path=/`;
+}
+
 let SKIN_COUNT = 5;
 
 var cookies = document.cookie
@@ -22,13 +29,13 @@ function getRandomSillyName() {
 
 // Audio settings
 if (!document.cookie.includes("musicVolume")) {
-    document.cookie = "musicVolume=0.5";
+    setCookie("musicVolume", "0.5");
 }
 if (!document.cookie.includes("sfxVolume")) {
-    document.cookie = "sfxVolume=0.5";
+    setCookie("sfxVolume", "0.5");
 }
 if (!document.cookie.includes("playJoinSounds")) {
-    document.cookie = "playJoinSounds=1";
+    setCookie("playJoinSounds", "1");
 }
 let musicVolume = cookies.musicVolume ? parseFloat(cookies.musicVolume) : 0.5;
 let sfxVolume = cookies.sfxVolume ? parseFloat(cookies.sfxVolume) : 0.5;
@@ -236,6 +243,10 @@ function updatePlayerCount() {
     if (header) {
         header.textContent = `Players (${count})`;
     }
+
+    sqr = document.getElementById("sqr");
+    division = (100/playerCount);
+    sqr.style.backgroundSize = division + "% " + division + "%, " + division + "% " + division + "%, 20% 20%";
 }
 
 // Initialize networking callbacks
@@ -247,12 +258,25 @@ networkManager.setCallbacks({
     onPlayerLeft: (name) => {
         removePlayerFromList(name);
         updatePlayerCount();
+        // Cancel countdown if a player leaves
+        if (countdownTimer) {
+            cancelCountdown();
+        }
     },
     onReadyStateUpdate: (name, ready) => {
         const player = players.find(p => p.name === name);
         if (player) {
             player.ready = ready;
             updatePlayerList();
+            
+            // Handle countdown for host
+            if (isHost) {
+                if (checkAllPlayersReady() && players.length >= 1) {
+                    startCountdown();
+                } else if (!ready) {
+                    cancelCountdown();
+                }
+            }
         }
     },
     onPlayerInfoUpdate: (oldName, newName, newSkinId) => {
@@ -285,6 +309,12 @@ networkManager.setCallbacks({
                 }
             }
             updatePlayerList();
+        }
+    },
+    onGameStarting: () => {
+        // Non-host clients start countdown when they receive the game starting event
+        if (!isHost) {
+            startCountdown();
         }
     }
 });
@@ -437,8 +467,8 @@ let settingsCloseSFX = document.getElementById("settings-close-sfx");
 function toggleSettings(open) {
     if (open && !settingsOpen) {
         settingsOpenSFX.play();
-        settingsBtn.style.top = "65%";
-        settingsDiv.style.top = "75%";
+        settingsBtn.style.top = "75%";
+        settingsDiv.style.top = "85%";
         settingsOpen = true;
     } else if (!open && settingsOpen) {
         settingsCloseSFX.play();
@@ -487,7 +517,7 @@ darkModeSwitch.addEventListener('change', function(event) {
         darkMode = false;
         document.getElementById("sqr").classList.add("ship-display-" + theme);
         document.getElementById("sqr").classList.remove("ship-display-" + theme + "-darkmode");
-        document.cookie = "darkMode=0";
+        setCookie("darkMode", "0");
     }
     else {
         let darkableElems = document.getElementsByClassName("darkable");
@@ -497,7 +527,7 @@ darkModeSwitch.addEventListener('change', function(event) {
         document.getElementById("sqr").classList.remove("ship-display-" + theme);
         document.getElementById("sqr").classList.add("ship-display-" + theme + "-darkmode");
         darkMode = true;
-        document.cookie = "darkMode=1";
+        setCookie("darkMode", "1");
     }
 });
 
@@ -527,7 +557,7 @@ themePicker.addEventListener('change', function(event) {
         themeableElems[i].classList.remove("retro");
         themeableElems[i].classList.add(theme);
     }
-    document.cookie = "theme=" + theme;
+    setCookie("theme", theme);
 });
 
 let nextSkin = document.getElementById("skin-next");
@@ -535,12 +565,11 @@ nextSkin.addEventListener('click', function(event) {
     if (isReady) {
         event.preventDefault();
         return;
-    }
-    skin++;
+    }    skin++;
     if (skin >= SKIN_COUNT) {
         skin = 1;
     }
-    document.cookie = "skin=" + skin;
+    setCookie("skin", skin);
     document.getElementById("skin-id").innerHTML = "Skin #" + skin;
     document.getElementById("boat_ur").src = './assets/boats/' + skin + '/ur.png';
     document.getElementById("boat_ul").src = './assets/boats/' + skin + '/ul.png';
@@ -561,12 +590,11 @@ backSkin.addEventListener('click', function(event) {
     if (isReady) {
         event.preventDefault();
         return;
-    }
-    skin--;
+    }    skin--;
     if (skin < 1) {
         skin = SKIN_COUNT;
     }
-    document.cookie = "skin=" + skin;
+    setCookie("skin", skin);
     document.getElementById("skin-id").innerHTML = "Skin #" + skin;
     document.getElementById("boat_ur").src = './assets/boats/' + skin + '/ur.png';
     document.getElementById("boat_ul").src = './assets/boats/' + skin + '/ul.png';
@@ -600,7 +628,7 @@ nicknameInput.addEventListener('input', function(event) {
     if (newNickname) {
         const oldNickname = currentPlayerName;
         currentPlayerName = newNickname;
-        document.cookie = `nickname=${encodeURIComponent(newNickname)}`;
+        setCookie("nickname", newNickname);
     // Notify server about nickname change
     if (networkManager) {
         networkManager.updatePlayerInfo({ 
@@ -654,17 +682,17 @@ if (!isMobileUser) {
         if (backgroundMusic) {
             backgroundMusic.volume = musicVolume;
         }
-        document.cookie = `musicVolume=${musicVolume}`;
+        setCookie("musicVolume", musicVolume);
     });
 
     sfxVolumeSlider.addEventListener('input', (e) => {
         sfxVolume = e.target.value / 100;
-        document.cookie = `sfxVolume=${sfxVolume}`;
+        setCookie("sfxVolume", sfxVolume);
     });
 
     playJoinSoundsToggle.addEventListener('change', (e) => {
         playJoinSounds = e.target.checked;
-        document.cookie = `playJoinSounds=${playJoinSounds ? "1" : "0"}`;
+        setCookie("playJoinSounds", (playJoinSounds ? "1" : "0"));
     });
 }
 
@@ -675,11 +703,25 @@ const skinBack = document.getElementById('skin-back');
 const skinNext = document.getElementById('skin-next');
 
 if (readyButton) {
+    // Add keyboard support
+    readyButton.addEventListener('keydown', function(e) {
+        if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault();
+            if (this.getAttribute('aria-disabled') === 'true') return;
+            this.click();
+        }
+    });
+
     readyButton.addEventListener('click', function() {
+        if (this.getAttribute('aria-disabled') === 'true') return;
         // Only allow toggling ready state if all suits are placed
         if (boatSections.length === placedSuits.size) {
             isReady = !isReady;
-            readyButton.style.backgroundColor = isReady ? '#44AA44' : '#664444';
+            this.style.backgroundColor = isReady ? '#44AA44' : '#AA4444';
+            this.classList.toggle('not-ready', !isReady);
+            
+            // Update ARIA label
+            this.setAttribute('aria-label', isReady ? 'Click to unready' : 'Click to ready up');
             
             // Disable/enable controls based on ready state
             skinBack.classList.toggle('disabled', isReady);
@@ -693,8 +735,17 @@ if (readyButton) {
             });
             
             networkManager.setReadyState(isReady);
+            
+            // If unreadying, cancel countdown
+            if (!isReady && countdownTimer) {
+                cancelCountdown();
+            }
         }
     });
+
+    // Set initial ARIA attributes
+    readyButton.setAttribute('aria-label', 'Click to ready up');
+    readyButton.setAttribute('aria-disabled', 'true');
 }
 
 // Disable skin change when ready
@@ -714,6 +765,18 @@ skinNext.addEventListener('click', function(event) {
     // ...existing code...
 });
 
+// Update ready button state
+function updateReadyButtonState() {
+    const readyButton = document.getElementById('ready-button');
+    if (!readyButton) return;
+
+    // Only enable the ready button if all suits are placed
+    const allSuitsPlaced = placedSuits.size === boatSections.length;
+    readyButton.setAttribute('aria-disabled', !allSuitsPlaced);
+    if (!allSuitsPlaced) {
+        readyButton.classList.remove('not-ready');
+    }
+}
 
 // Update createRoom to handle ready state updates
 function performCreateRoom(roomCode) {
@@ -756,7 +819,7 @@ function toggleDarkMode(isDark) {
         darkMode = false;
         document.getElementById("sqr").classList.add("ship-display-" + theme);
         document.getElementById("sqr").classList.remove("ship-display-" + theme + "-darkmode");
-        document.cookie = "darkMode=0";
+        setCookie("darkMode", "0");
     } else {
         let darkableElems = document.getElementsByClassName("darkable");
         for (let i = 0; i < darkableElems.length; i++) {
@@ -765,7 +828,7 @@ function toggleDarkMode(isDark) {
         document.getElementById("sqr").classList.remove("ship-display-" + theme);
         document.getElementById("sqr").classList.add("ship-display-" + theme + "-darkmode");
         darkMode = true;
-        document.cookie = "darkMode=1";
+        setCookie("darkMode", "1");
     }
 }
 
@@ -817,16 +880,7 @@ function updateGridVisibility() {
     }
 }
 
-// Update the ready button state based on suit placement
-function updateReadyButtonState() {
-    const readyButton = document.getElementById('ready-button');
-    if (!readyButton) return;
 
-    // Only enable the ready button if all suits are placed
-    const allSuitsPlaced = placedSuits.size === boatSections.length;
-    readyButton.disabled = !allSuitsPlaced;
-    //readyButton.style.opacity = allSuitsPlaced ? '1' : '0.5';
-}
 
 // Reset a square back to its original position
 function resetSquarePosition(square) {
@@ -1030,6 +1084,139 @@ document.addEventListener('touchend', (e) => {
     currentSquare.style.transition = 'all 0.3s ease';
     isDragging = false;
     currentSquare = null;
+});
+
+// Game state management
+let countdownTimer = null;
+let gameStarting = false;
+
+// Add countdown display
+const countdownDisplay = document.createElement('div');
+countdownDisplay.id = 'countdown-display';
+countdownDisplay.style.cssText = 'display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); font-size: 48px; font-weight: bold; color: #fff; text-shadow: 2px 2px 4px rgba(0,0,0,0.5); z-index: 1000;';
+document.body.appendChild(countdownDisplay);
+
+function startCountdown() {
+    if (countdownTimer || gameStarting) return;
+    
+    let countdown = 3;
+    countdownDisplay.style.display = 'block';
+    gameStarting = true;
+    
+    function updateCountdown() {
+        if (countdown > 0) {
+            countdownDisplay.textContent = countdown;
+            playOneShot('./assets/audio/player_join_1.mp3', 0.3);
+            countdown--;
+            countdownTimer = setTimeout(updateCountdown, 1000);
+        } else {
+            countdownDisplay.textContent = 'GO!';
+            playOneShot('./assets/audio/player_join_2.mp3', 0.3);
+            setTimeout(() => {
+                countdownDisplay.style.display = 'none';
+                startGame();
+            }, 1000);
+            countdownTimer = null;
+        }
+    }
+    
+    updateCountdown();
+}
+
+function cancelCountdown() {
+    if (countdownTimer) {
+        clearTimeout(countdownTimer);
+        countdownTimer = null;
+    }
+    gameStarting = false;
+    countdownDisplay.style.display = 'none';
+}
+
+function startGame() {
+    gameStarting = false;
+    
+    // Emit game start event to server if we're the host
+    if (isHost && networkManager && networkManager.socket) {
+        networkManager.socket.emit('gameStart');
+    }
+    
+    // TODO: Add game start logic here
+    console.log('Game starting!');
+}
+
+function checkAllPlayersReady() {
+    if (players.length < 1) return false; // Need at least 1 other player
+    return players.every(player => player.ready);
+}
+
+// Initialize networking callbacks
+networkManager.setCallbacks({
+    onPlayerJoined: (name, skinId, ready) => {
+        addPlayerToList(name, skinId, ready);
+        updatePlayerCount();
+    },
+    onPlayerLeft: (name) => {
+        removePlayerFromList(name);
+        updatePlayerCount();
+        // Cancel countdown if a player leaves
+        if (countdownTimer) {
+            cancelCountdown();
+        }
+    },
+    onReadyStateUpdate: (name, ready) => {
+        const player = players.find(p => p.name === name);
+        if (player) {
+            player.ready = ready;
+            updatePlayerList();
+            
+            // Handle countdown for host
+            if (isHost) {
+                if (checkAllPlayersReady() && players.length >= 1) {
+                    startCountdown();
+                } else if (!ready) {
+                    cancelCountdown();
+                }
+            }
+        }
+    },
+    onPlayerInfoUpdate: (oldName, newName, newSkinId) => {
+        const player = players.find(p => p.name === oldName);
+        if (player) {
+            // Update player info with highlighting effects
+            const playerItem = document.querySelector(`[data-name="${oldName}"]`);
+            if (playerItem) {
+                // If nickname changed
+                if (newName) {
+                    player.name = newName;
+                    playerItem.dataset.name = newName;
+                    
+                    // Add orange highlight for nickname changes
+                    const nameSpan = playerItem.querySelector('span');
+                    nameSpan.classList.add('nickname-changed');
+                    setTimeout(() => nameSpan.classList.remove('nickname-changed'), 2000);
+                }
+                
+                // If skin changed
+                if (newSkinId !== undefined && newSkinId !== player.skinId) {
+                    player.skinId = newSkinId;
+                    const boatImg = playerItem.querySelector('img');
+                    if (boatImg) {
+                        boatImg.src = `./assets/boats/${newSkinId}/icon.png`;
+                        // Add blue highlight for skin changes
+                        boatImg.classList.add('skin-changed');
+                        setTimeout(() => boatImg.classList.remove('skin-changed'), 2000);
+                    }
+                }
+            }
+            updatePlayerList();
+        }
+    },
+    onGameStarting: () => {
+        // Non-host clients start countdown when they receive the game starting event
+        if (!isHost) {
+            startCountdown();
+        }
+    }
 });
 
 
