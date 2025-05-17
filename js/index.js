@@ -402,6 +402,26 @@ function getRandomJoinSound() {
     return joinSounds[Math.floor(Math.random() * joinSounds.length)];
 }
 
+function getRandomCountdownSound() {
+    const joinSounds = [
+        './assets/audio/game_countdown_1.mp3',
+        './assets/audio/game_countdown_2.mp3',
+        './assets/audio/game_countdown_3.mp3',
+        './assets/audio/game_countdown_4.mp3',
+        './assets/audio/game_countdown_5.mp3'
+    ];
+    return joinSounds[Math.floor(Math.random() * joinSounds.length)];
+}
+
+function getRandomStartSound() {
+    const joinSounds = [
+        './assets/audio/game_start_1.mp3',
+        './assets/audio/game_start_2.mp3',
+        './assets/audio/game_start_3.mp3'
+    ];
+    return joinSounds[Math.floor(Math.random() * joinSounds.length)];
+}
+
 
 
 // Device detection for different modes
@@ -1094,6 +1114,10 @@ let gameStarting = false;
 const countdownDisplay = document.createElement('div');
 countdownDisplay.id = 'countdown-display';
 countdownDisplay.style.cssText = 'display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); font-size: 48px; font-weight: bold; color: #fff; text-shadow: 2px 2px 4px rgba(0,0,0,0.5); z-index: 1000;';
+if (theme==="retro") {
+    countdownDisplay.classList.add("retro");
+    countdownDisplay.style.fontFamily = "blocky";
+}
 document.body.appendChild(countdownDisplay);
 
 function startCountdown() {
@@ -1106,12 +1130,12 @@ function startCountdown() {
     function updateCountdown() {
         if (countdown > 0) {
             countdownDisplay.textContent = countdown;
-            playOneShot('./assets/audio/player_join_1.mp3', 0.3);
+            playOneShot(getRandomCountdownSound(), 0.1);
             countdown--;
             countdownTimer = setTimeout(updateCountdown, 1000);
         } else {
             countdownDisplay.textContent = 'GO!';
-            playOneShot('./assets/audio/player_join_2.mp3', 0.3);
+            playOneShot(getRandomStartSound(), 0.07);
             setTimeout(() => {
                 countdownDisplay.style.display = 'none';
                 startGame();
@@ -1171,7 +1195,7 @@ networkManager.setCallbacks({
             
             // Handle countdown for host
             if (isHost) {
-                if (checkAllPlayersReady() && players.length >= 1) {
+                if (checkAllPlayersReady() && players.length > 1) {
                     startCountdown();
                 } else if (!ready) {
                     cancelCountdown();
