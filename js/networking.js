@@ -7,46 +7,10 @@ let onPlayerLeft;
 let onReadyStateUpdate;
 let onPlayerInfoUpdate;
 let onGameStarting;
+let onRoomClosed;
 
-function connectToServer() {
-    if (socket && socket.connected) {
-        return; // Already connected
-    }
-    socket = io('https://eminich.com:3000', {
-        reconnectionAttempts: 5,
-        timeout: 10000,
-        transports: ['websocket', 'polling'],
-        forceNew: true,
-        reconnectionDelay: 1000,
-        reconnectionDelayMax: 5000,
-        maxRetries: 3,
-        pingInterval: 25000,
-        pingTimeout: 60000
-    });
-    
-    socket.on('connect', () => {
-        console.log('Connected to server');
-        lastPongReceived = Date.now();
-        
-        // Clear any existing ping interval
-        if (pingInterval) {
-            clearInterval(pingInterval);
-        }
-        
-        // Start ping interval
-        pingInterval = setInterval(() => {
-            if (socket.connected) {
-                socket.emit('ping');
-                // Check if we haven't received a pong in 60 seconds
-                if (Date.now() - lastPongReceived > 60000) {
-                    console.log('Connection lost, attempting to reconnect...');
-                    clearInterval(pingInterval);
-                    socket.disconnect();
-                    setTimeout(() => connectToServer(), 1000);
-                }
-            }
-        }, 25000);
-    });
+function setupSocketEventHandlers() {
+    if (!socket) return;
 
     socket.on('pong', () => {
         lastPongReceived = Date.now();
@@ -54,16 +18,37 @@ function connectToServer() {
 
     socket.on('roomError', (data) => {
         showError(data.message);
-    });    socket.on('roomClosed', () => {
+    });
+    
+    socket.on('roomClosed', () => {
         document.getElementById('error-message').style.marginTop = "50vmin";
         document.getElementById('error-message').style.color = "#FF0000";
         showError('Host has disconnected');
+        if (onRoomClosed) {
+            onRoomClosed();
+        }
         
         // Reset UI elements
         document.getElementById('game-code').style.display = '';
         document.getElementById('join-button').style.display = '';
         document.getElementById('ready-button').style.display = 'none';
         document.getElementById('ready-text').style.display = 'none';
+        
+        // Reset any player ready state
+        const readyBtn = document.getElementById('ready-button');
+        if (readyBtn) {
+            readyBtn.style.backgroundColor = '#AA4444';
+            readyBtn.classList.add('not-ready');
+            readyBtn.setAttribute('aria-label', 'Click to ready up');
+        }
+        
+        // Enable nickname and skin selection again
+        const nicknameInput = document.getElementById('nickname');
+        if (nicknameInput) nicknameInput.disabled = false;
+        const skinBackArrow = document.getElementById('skin-back');
+        const skinNextArrow = document.getElementById('skin-next');
+        if (skinBackArrow) skinBackArrow.classList.remove('disabled');
+        if (skinNextArrow) skinNextArrow.classList.remove('disabled');
         
         // Hide suit squares and reset them
         const suitSquares = document.getElementById('suit-squares');
@@ -106,6 +91,50 @@ function connectToServer() {
         if (onGameStarting) {
             onGameStarting();
         }
+    });
+}
+
+function connectToServer() {
+    if (socket && socket.connected) {
+        return; // Already connected
+    }
+    socket = io('https://eminich.com:3000', {
+        reconnectionAttempts: 5,
+        timeout: 10000,
+        transports: ['websocket', 'polling'],
+        forceNew: true,
+        reconnectionDelay: 1000,
+        reconnectionDelayMax: 5000,
+        maxRetries: 3,
+        pingInterval: 25000,
+        pingTimeout: 60000
+    });
+    
+    socket.on('connect', () => {
+        console.log('Connected to server');
+        lastPongReceived = Date.now();
+        
+        // Clear any existing ping interval
+        if (pingInterval) {
+            clearInterval(pingInterval);
+        }
+        
+        // Start ping interval
+        pingInterval = setInterval(() => {
+            if (socket.connected) {
+                socket.emit('ping');
+                // Check if we haven't received a pong in 60 seconds
+                if (Date.now() - lastPongReceived > 60000) {
+                    console.log('Connection lost, attempting to reconnect...');
+                    clearInterval(pingInterval);
+                    socket.disconnect();
+                    setTimeout(() => connectToServer(), 1000);
+                }
+            }
+        }, 25000);
+
+        // Set up event handlers after connection
+        setupSocketEventHandlers();
     });
 }
 
@@ -250,10 +279,15 @@ window.networkManager = {
         }
     },
     setCallbacks: (callbacks) => {
+        // Set all callbacks
         onPlayerJoined = callbacks.onPlayerJoined;
         onPlayerLeft = callbacks.onPlayerLeft;
         onReadyStateUpdate = callbacks.onReadyStateUpdate;
         onPlayerInfoUpdate = callbacks.onPlayerInfoUpdate;
         onGameStarting = callbacks.onGameStarting;
+        onRoomClosed = callbacks.onRoomClosed;
+        
+        // After setting callbacks, re-setup event handlers to ensure they're using the new callbacks
+        setupSocketEventHandlers();
     }
 };

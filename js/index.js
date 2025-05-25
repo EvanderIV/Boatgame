@@ -62,12 +62,15 @@ let activeLoopTimeouts = []; // Stores IDs of pending setTimeout calls for loops
  * @param {number} modifierVolume - A volume modifier specific to this track.
  * @param {number} [globalVolume=musicVolume] - The base global music volume.
  */
-function playBackgroundMusic(url, modifierVolume, globalVolume = musicVolume) {
-    currentMusicUrl = url;
+function playBackgroundMusic(url, modifierVolume, globalVolume = musicVolume) {    currentMusicUrl = url;
     currentTrackModifier = modifierVolume; // Store modifier for the new track
 
     // Recalculate nominal volume based on the new global musicVolume and the new track's modifier
     currentTrackNominalVolume = globalVolume * currentTrackModifier;
+
+    // Determine loop duration based on the track
+    const isBackgroundMusic = url.includes('background_music.mp3');
+    const loopDuration = isBackgroundMusic ? 100 : 104; // 300 seconds (5 minutes) for background music, 104 for lobby
 
     // Clear any pending loop timeouts from previous tracks
     for (const timeoutId of activeLoopTimeouts) {
@@ -82,13 +85,14 @@ function playBackgroundMusic(url, modifierVolume, globalVolume = musicVolume) {
         // but since we are creating new audio objects each time, and old ones are dereferenced,
         // modern browsers are good at GC. The main concern is old timeouts firing.
     }
-    activeAudioInstances.clear();
-
-    const loopDurationMilliseconds = 103.95 * 1000; // 104 seconds
+    activeAudioInstances.clear();    // Calculate loop duration in milliseconds, slightly less to avoid overlap issues
+    let loopDurationMilliseconds = (loopDuration - 0.05) * 1000;
 
     /**
      * Creates, configures, and plays a single audio instance.
      * Schedules the next instance via setTimeout upon playing.
+     * For lobby music: loops every 104 seconds
+     * For background music: loops every 5 minutes (300 seconds)
      * @returns {HTMLAudioElement | null} The created audio element, or null on immediate error.
      */
     function createAndPlayInstance() {
@@ -122,6 +126,8 @@ function playBackgroundMusic(url, modifierVolume, globalVolume = musicVolume) {
                 } finally {
                     // Remove this timeoutId from the global array as it has now executed or been bypassed
                     activeLoopTimeouts = activeLoopTimeouts.filter(id => id !== timeoutId);
+                    // Slightly adjust timing to maintain smooth loops
+                    loopDurationMilliseconds = (loopDuration - 0.02) * 1000
                 }
             }, loopDurationMilliseconds);
             activeLoopTimeouts.push(timeoutId);
@@ -189,7 +195,7 @@ function fadeBackgroundMusic(targetAbsoluteVolume, duration) {
             activeAudioInstances.forEach(audio => {
                 audio.volume = Math.max(0, Math.min(1, targetAbsoluteVolume));
                 if (targetAbsoluteVolume === 0 && audio.volume === 0) {
-                    audio.pause();
+                    //audio.pause();
                 }
             });
         }
@@ -381,7 +387,23 @@ function updatePlayerCount() {
 
     const sqrElement = document.getElementById("sqr");
     if (sqrElement) { // Removed playerCount null check as it's not directly used for sqrElement styling
-        const division = (count > 0 ? (100 / count) : 100); 
+        const playerAreaSide = 2;
+        const spacingLogCoefficient = 0.5;
+        const offset = 4;
+        const rawCalculatedSide = (playerAreaSide + spacingLogCoefficient * Math.log(numPlayers)) * Math.sqrt(numPlayers) + offset;
+        const boardSide = Math.ceil(rawCalculatedSide / playerAreaSide) * playerAreaSide;
+        const division = (count > 1 ? ((100 / sqrsPerPlayer) / count) : (100/8));
+        
+
+        // Ensure the final side length is a multiple of playerAreaSide.
+        // This is achieved by dividing by playerAreaSide, taking the ceiling,
+        // and then multiplying back. This rounds rawCalculatedSide UP to the nearest multiple of playerAreaSide.
+        // This also ensures that the boardSide is at least playerAreaSide, because:
+        // - If rawCalculatedSide is playerAreaSide (for numPlayers=1), boardSide becomes playerAreaSide.
+        // - If rawCalculatedSide is very small but positive (e.g. due to an unusual coefficient, though not intended here),
+        //   Math.ceil(small_positive_val / playerAreaSide) will be 1 (assuming playerAreaSide > 0),
+        //   so boardSide becomes playerAreaSide.
+        
         sqrElement.style.backgroundSize = `${division}% ${division}%, ${division}% ${division}%, 20% 20%`;
     }
 }
@@ -443,6 +465,9 @@ if (typeof networkManager !== 'undefined') {
             if (!isHost) {
                 startCountdown();
             }
+        },
+        onRoomClosed: () => { // New handler for host disconnection
+            resetGameState();
         }
     });
 } else {
@@ -495,7 +520,7 @@ if (!isMobileUser) {
             } else {
                 console.error("networkManager not available for createRoom");
             }
-            addPlayer('You (Host)', skin, true); 
+            addPlayer('You (Host)', skin, true);
             playBackgroundMusic('./assets/audio/lobby_music.mp3', 0.4, musicVolume);
         });
     }
@@ -553,7 +578,7 @@ function getRandomStartSound() {
 }
 
 function generateRoomCode() {
-    const letters = 'ABCDEFGHJKLMNPQRSTUWXYZ'; 
+    const letters = 'ABCDEFGHJKLMNPQRSTUWXYZ';
     const badWords = ['FUCK', 'FVCK', 'SHIT', 'DAMN', 'CUNT', 'DICK', 'COCK', 'TWAT', 'CRAP'];
     while (true) {
         let code = '';
@@ -622,7 +647,7 @@ if (settingsDiv) {
 let darkModeSwitch = document.getElementById("dark-mode-toggle");
 if (darkModeSwitch) {
     darkModeSwitch.addEventListener('change', function(event) {
-        toggleDarkMode(event.target.checked); 
+        toggleDarkMode(event.target.checked);
         const desktopSwitch = document.getElementById("dark-mode-toggle-desktop");
         if (desktopSwitch) desktopSwitch.checked = event.target.checked;
     });
@@ -653,7 +678,7 @@ if (themePicker) {
     });
 }
 
-let currentPlayerName = cookies.nickname || getRandomSillyName(); 
+let currentPlayerName = cookies.nickname || getRandomSillyName();
 
 let nextSkinBtn = document.getElementById("skin-next"); // Renamed for clarity
 if (nextSkinBtn) {
@@ -679,7 +704,7 @@ if (nextSkinBtn) {
 let backSkinBtn = document.getElementById("skin-back"); // Renamed for clarity
 if (backSkinBtn) {
     backSkinBtn.addEventListener('click', function(event) {
-        if (isReady) { event.preventDefault(); return; }    
+        if (isReady) { event.preventDefault(); return; }
         skin--;
         if (skin < 1) skin = SKIN_COUNT;
         setCookie("skin", skin.toString());
@@ -831,49 +856,42 @@ if (readyButton) {
     });
     readyButton.setAttribute('aria-label', 'Click to ready up');
     // Initial state is disabled, will be enabled by updateReadyButtonState
-    readyButton.setAttribute('aria-disabled', 'true'); 
+    readyButton.setAttribute('aria-disabled', 'true');
 }
 
 
 function updateReadyButtonState() {
-    const readyBtn = document.getElementById('ready-button'); // Use consistent naming
+    const readyBtn = document.getElementById('ready-button');
     if (!readyBtn) return;
 
     if (typeof boatSections !== 'undefined' && typeof placedSuits !== 'undefined') {
+        // Check if all boat sections have a suit placed in them
         const allSuitsPlaced = placedSuits.size === boatSections.length;
         readyBtn.setAttribute('aria-disabled', allSuitsPlaced ? 'false' : 'true');
         if (!allSuitsPlaced) {
             readyBtn.classList.add('not-ready'); 
-            readyBtn.style.backgroundColor = '#AA4444'; 
-            isReady = false; // Player cannot be ready if suits are not placed
-            // Also update ARIA label if necessary and other UI elements tied to isReady
+            readyBtn.style.backgroundColor = '#AA4444';
+            isReady = false;
             readyBtn.setAttribute('aria-label', 'Place all ship sections to ready up');
-
-        } else if (!isReady) { // All suits placed, but player hasn't clicked ready
-             readyBtn.classList.remove('not-ready'); // Or ensure it's styled for "can ready"
-             readyBtn.style.backgroundColor = '#AA4444'; // Default "not ready" color
-             readyBtn.setAttribute('aria-label', 'Click to ready up');
-        } else { // All suits placed AND player is ready
+        } else if (!isReady) {
             readyBtn.classList.remove('not-ready');
-            readyBtn.style.backgroundColor = '#44AA44'; // "Ready" color
-            readyBtn.setAttribute('aria-label', 'Click to unready');
+            readyBtn.style.backgroundColor = '#AA4444';
+            readyBtn.setAttribute('aria-label', 'Click to ready up');
         }
-    } else {
-         readyBtn.setAttribute('aria-disabled', 'true'); 
     }
 }
 
 let darkModeSwitchDesktop = document.getElementById("dark-mode-toggle-desktop");
 
 function toggleDarkMode(isDark) { 
-    darkMode = isDark; 
+    darkMode = isDark;
     let darkableElems = document.getElementsByClassName("darkable");
     for (let i = 0; i < darkableElems.length; i++) {
         if (isDark) darkableElems[i].classList.add("darkmode");
         else darkableElems[i].classList.remove("darkmode");
     }
     
-    const sqrElement = document.getElementById("sqr"); 
+    const sqrElement = document.getElementById("sqr");
     if (sqrElement) {
         // Reset classes carefully to preserve base layout classes
         sqrElement.className = sqrElement.className.replace(/ship-display-[\w-]+darkmode/g, '').replace(/ship-display-(retro|modern|red)(?!-darkmode)/g, '');
@@ -893,7 +911,7 @@ if (darkModeSwitchDesktop) {
     }
     darkModeSwitchDesktop.addEventListener('change', function(event) {
         toggleDarkMode(event.target.checked);
-        if (darkModeSwitch) darkModeSwitch.checked = event.target.checked; 
+        if (darkModeSwitch) darkModeSwitch.checked = event.target.checked;
     });
 }
 // Apply initial dark mode if only mobile switch exists and cookie is set
@@ -904,15 +922,15 @@ if (cookies.darkMode === "1" && !darkModeSwitchDesktop && darkModeSwitch && !dar
 
 
 const suitSquares = document.querySelectorAll('.suit-square');
-const boatSections = document.querySelectorAll('.playerBoat'); 
-const placedSuits = new Map(); 
+const boatSections = document.querySelectorAll('.playerBoat');
+const placedSuits = new Map();
 let isDragging = false;
 let currentSquare = null;
 let offsetX = 0, offsetY = 0;
-let originalPosition = null; 
+let originalPosition = null;
 
 function updateGridVisibility() {
-    const suitSquaresContainer = document.getElementById('suit-squares'); 
+    const suitSquaresContainer = document.getElementById('suit-squares');
     if (!suitSquaresContainer) return;
     // This logic might need review: if boatSections is empty, placedSuits.size will also be 0.
     const allPlaced = (boatSections.length > 0 && placedSuits.size === boatSections.length);
@@ -949,16 +967,16 @@ if (suitSquares.length > 0 && boatSections.length > 0) {
             offsetX = touch.clientX - rect.left;
             offsetY = touch.clientY - rect.top;
             originalPosition = { left: rect.left, top: rect.top, parent: square.parentElement };
-            square.style.transition = 'none'; 
+            square.style.transition = 'none';
             square.style.zIndex = '1000';
             square.style.opacity = '0.8';
         });
 
         square.addEventListener('touchmove', (e) => {
             if (!isDragging || !currentSquare) return;
-            e.preventDefault(); 
+            e.preventDefault();
             const touch = e.touches[0];
-            currentSquare.style.position = 'fixed'; 
+            currentSquare.style.position = 'fixed';
             currentSquare.style.left = `${touch.clientX - offsetX}px`;
             currentSquare.style.top = `${touch.clientY - offsetY}px`;
 
@@ -967,7 +985,7 @@ if (suitSquares.length > 0 && boatSections.length > 0) {
             let closestSection = null;
             let minDistance = Infinity;
             boatSections.forEach(section => {
-                section.style.opacity = '1'; 
+                section.style.opacity = '1';
                 const sectionRect = section.getBoundingClientRect();
                 const sectionCenter = { x: sectionRect.left + sectionRect.width / 2, y: sectionRect.top + sectionRect.height / 2 };
                 const distance = Math.hypot(squareCenter.x - sectionCenter.x, squareCenter.y - sectionCenter.y);
@@ -996,7 +1014,7 @@ if (suitSquares.length > 0 && boatSections.length > 0) {
             if (distance < minDistanceToTarget) {
                 minDistanceToTarget = distance;
                 closestTargetSection = section;
-                closestTargetRect = sectionRect; 
+                closestTargetRect = sectionRect;
             }
         });
 
@@ -1036,23 +1054,23 @@ if (suitSquares.length > 0 && boatSections.length > 0) {
             // Place currentSquare (suitToPlace) in the new targetSection
             placedSuits.set(targetSectionId, suitToPlace);
             currentSquare.classList.add('placed');
-            currentSquare.style.position = 'fixed'; 
+            currentSquare.style.position = 'fixed';
             currentSquare.style.left = `${closestTargetRect.left + (closestTargetRect.width - currentSquare.offsetWidth) / 2}px`;
             currentSquare.style.top = `${closestTargetRect.top + (closestTargetRect.height - currentSquare.offsetHeight) / 2}px`;
         }
 
         if (!isPlacedSuccessfully) {
-            resetSquarePosition(currentSquare, originalPosition); 
+            resetSquarePosition(currentSquare, originalPosition);
         }
 
-        boatSections.forEach(section => section.style.opacity = '1'); 
-        updateGridVisibility();
+        boatSections.forEach(section => section.style.opacity = '1');
+        //updateGridVisibility();
         updateReadyButtonState();
 
         if(currentSquare) { 
-            currentSquare.style.zIndex = '1'; 
+            currentSquare.style.zIndex = '1';
             currentSquare.style.opacity = '1';
-            currentSquare.style.transition = 'all 0.3s ease'; 
+            currentSquare.style.transition = 'all 0.3s ease';
         }
         isDragging = false;
         currentSquare = null;
@@ -1066,32 +1084,31 @@ const countdownDisplay = document.createElement('div');
 countdownDisplay.id = 'countdown-display';
 countdownDisplay.style.cssText = 'display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); font-size: 48px; font-weight: bold; color: #fff; text-shadow: 2px 2px 4px rgba(0,0,0,0.5); z-index: 1000;';
 if (theme==="retro") { 
-    countdownDisplay.classList.add("retro"); 
-    countdownDisplay.style.fontFamily = "blocky, sans-serif"; 
+    countdownDisplay.classList.add("retro");
+    countdownDisplay.style.fontFamily = "blocky, sans-serif";
 }
 document.body.appendChild(countdownDisplay);
 
-function startCountdown() {
-    if (countdownTimer || gameStarting) return;
+function startCountdown() {    if (countdownTimer || gameStarting) return;
     let countdown = 3;
     countdownDisplay.style.display = 'block';
     gameStarting = true;
-    fadeBackgroundMusic(currentTrackNominalVolume * 0.1, 1000); // Fade relative to current nominal volume
+    fadeBackgroundMusic(0, 3000); // Fade to zero over the countdown duration
     
     function updateCountdown() {
         if (countdown > 0) {
             countdownDisplay.textContent = countdown;
-            playOneShot(getRandomCountdownSound(), 0.1 * sfxVolume); 
+            playOneShot(getRandomCountdownSound(), 0.1 * sfxVolume);
             countdown--;
             countdownTimer = setTimeout(updateCountdown, 1000);
         } else {
             countdownDisplay.textContent = 'GO!';
-            playOneShot(getRandomStartSound(), 0.07 * sfxVolume); 
+            playOneShot(getRandomStartSound(), 0.07 * sfxVolume);
             setTimeout(() => {
                 countdownDisplay.style.display = 'none';
                 startGame();
             }, 1000);
-            countdownTimer = null; 
+            countdownTimer = null;
         }
     }
     updateCountdown();
@@ -1104,14 +1121,32 @@ function cancelCountdown() {
     }
     gameStarting = false;
     countdownDisplay.style.display = 'none';
-    fadeBackgroundMusic(currentTrackNominalVolume, 1000); // Restore to full nominal volume
+    fadeBackgroundMusic(currentTrackNominalVolume, 2000); // Restore to full nominal volume over 2 seconds
 }
 
 function startGame() {
-    gameStarting = false; 
+    gameStarting = false;
     if (isHost && typeof networkManager !== 'undefined' && networkManager.socket) {
         networkManager.socket.emit('gameStart');
+    } else if (isMobileUser) {
+        // Hide UI elements for mobile clients
+        const nicknameInput = document.getElementById('nickname');
+        const readyButton = document.getElementById('ready-button');
+        const skinBackArrow = document.getElementById('skin-back');
+        const skinNextArrow = document.getElementById('skin-next');
+        const suitSquares = document.getElementById('suit-squares');
+
+        if (nicknameInput) nicknameInput.style.display = 'none';
+        if (readyButton) readyButton.style.display = 'none';
+        if (skinBackArrow) skinBackArrow.style.display = 'none';
+        if (skinNextArrow) skinNextArrow.style.display = 'none';
+        if (suitSquares) suitSquares.style.display = 'none';
     }
+    
+    // Start new background music
+    activeAudioInstances.forEach(audio => audio.pause()); // Stop any existing music
+    activeAudioInstances.clear();
+    playBackgroundMusic('./assets/audio/background_music.mp3', 0.4, musicVolume);
     console.log('Game starting!');
 }
 
@@ -1122,6 +1157,32 @@ function checkAllPlayersReady() {
     // This client-side check is a UI convenience; server should be the source of truth.
     if (players.length === 0) return false; // No other players connected
     return players.every(player => player.ready);
+}
+
+function resetGameState() {
+    // Reset ready state
+    isReady = false;
+    
+    // Clear all players
+    players = [];
+    updatePlayerList();
+    
+    // Cancel any ongoing countdown
+    if (countdownTimer) {
+        cancelCountdown();
+    }
+    
+    // Reset game-starting state
+    gameStarting = false;
+    
+    // Restore all interactive elements
+    document.querySelectorAll('.suit-square').forEach(square => {
+        square.style.pointerEvents = 'auto';
+        square.style.opacity = '1';
+    });
+    
+    // Reset music to normal if it was fading
+    fadeBackgroundMusic(currentTrackNominalVolume, 2000);
 }
 
 

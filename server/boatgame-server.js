@@ -110,6 +110,20 @@ io.on('connection', client => {
         });
     });
 
+    // Handle game start from host
+    client.on('gameStart', () => {
+        if (!roomCode) return;
+        
+        const room = activeRooms.get(roomCode);
+        if (!room) return;
+
+        // Only allow host to start the game
+        if (client.id === room.hostId) {
+            // Notify all clients in the room that the game is starting
+            io.to(roomCode).emit('gameStarting');
+        }
+    });
+
     // Handle player info updates (nickname and skin changes)
     client.on('updatePlayerInfo', (data) => {
         if (!roomCode) return;
