@@ -463,7 +463,7 @@ if (typeof networkManager !== 'undefined') {
         },
         onGameStarting: () => {
             if (!isHost) {
-                startCountdown();
+                startGame();
             }
         },
         onRoomClosed: () => { // New handler for host disconnection
@@ -1127,9 +1127,12 @@ function cancelCountdown() {
 function startGame() {
     gameStarting = false;
     if (isHost && typeof networkManager !== 'undefined' && networkManager.socket) {
+        // Tell server to notify other clients that game is starting
         networkManager.socket.emit('gameStart');
-    } else if (isMobileUser) {
-        // Hide UI elements for mobile clients
+    }
+    
+    if (isMobileUser && !isHost) {
+        // Hide UI elements for mobile clients (not the host)
         const nicknameInput = document.getElementById('nickname');
         const readyButton = document.getElementById('ready-button');
         const skinBackArrow = document.getElementById('skin-back');

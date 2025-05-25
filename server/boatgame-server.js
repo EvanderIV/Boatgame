@@ -121,6 +121,7 @@ io.on('connection', client => {
         if (client.id === room.hostId) {
             // Notify all clients in the room that the game is starting
             io.to(roomCode).emit('gameStarting');
+            console.log(`Game starting in room: ${roomCode}`);
         }
     });
 

@@ -85,7 +85,6 @@ function setupSocketEventHandlers() {
             onPlayerInfoUpdate(oldName, newName, newSkin);
         }
     });
-
     // Add game starting handler
     socket.on('gameStarting', () => {
         if (onGameStarting) {
