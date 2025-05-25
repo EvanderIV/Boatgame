@@ -390,9 +390,9 @@ function updatePlayerCount() {
         const playerAreaSide = 2;
         const spacingLogCoefficient = 0.5;
         const offset = 4;
-        const rawCalculatedSide = (playerAreaSide + spacingLogCoefficient * Math.log(numPlayers)) * Math.sqrt(numPlayers) + offset;
-        const boardSide = Math.ceil(rawCalculatedSide / playerAreaSide) * playerAreaSide;
-        const division = (count > 1 ? ((100 / sqrsPerPlayer) / count) : (100/8));
+        const logAlgorithm = 100 / ((playerAreaSide + spacingLogCoefficient * Math.log(count)) * Math.sqrt(count) + offset);
+        const linearAlgorithm = 100 / ((playerAreaSide * count) + offset);
+        const division = (count > 2 ? (linearAlgorithm) : (100/8));
         
 
         // Ensure the final side length is a multiple of playerAreaSide.
@@ -462,9 +462,7 @@ if (typeof networkManager !== 'undefined') {
             }
         },
         onGameStarting: () => {
-            if (!isHost) {
-                startGame();
-            }
+            startGame();
         },
         onRoomClosed: () => { // New handler for host disconnection
             resetGameState();
@@ -1083,13 +1081,14 @@ let gameStarting = false;
 const countdownDisplay = document.createElement('div');
 countdownDisplay.id = 'countdown-display';
 countdownDisplay.style.cssText = 'display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); font-size: 48px; font-weight: bold; color: #fff; text-shadow: 2px 2px 4px rgba(0,0,0,0.5); z-index: 1000;';
-if (theme==="retro") { 
+if (theme==="retro") {
     countdownDisplay.classList.add("retro");
     countdownDisplay.style.fontFamily = "blocky, sans-serif";
 }
 document.body.appendChild(countdownDisplay);
 
-function startCountdown() {    if (countdownTimer || gameStarting) return;
+function startCountdown() {
+    if (countdownTimer || gameStarting) return;
     let countdown = 3;
     countdownDisplay.style.display = 'block';
     gameStarting = true;
@@ -1104,9 +1103,20 @@ function startCountdown() {    if (countdownTimer || gameStarting) return;
         } else {
             countdownDisplay.textContent = 'GO!';
             playOneShot(getRandomStartSound(), 0.07 * sfxVolume);
+            
+            // For host, emit game start but don't start yet
+            if (isHost && typeof networkManager !== 'undefined') {
+                const socket = networkManager.getSocket();
+                if (socket && socket.connected) {
+                    socket.emit('gameStart');
+                } else {
+                    console.warn("Socket not connected for game start");
+                    startGame(); // Fallback for offline testing
+                }
+            }
+
             setTimeout(() => {
                 countdownDisplay.style.display = 'none';
-                startGame();
             }, 1000);
             countdownTimer = null;
         }
@@ -1126,30 +1136,28 @@ function cancelCountdown() {
 
 function startGame() {
     gameStarting = false;
-    if (isHost && typeof networkManager !== 'undefined' && networkManager.socket) {
-        // Tell server to notify other clients that game is starting
-        networkManager.socket.emit('gameStart');
-    }
     
     if (isMobileUser && !isHost) {
         // Hide UI elements for mobile clients (not the host)
         const nicknameInput = document.getElementById('nickname');
-        const readyButton = document.getElementById('ready-button');
+        const readyWrapper = document.getElementById('ready-wrapper');
         const skinBackArrow = document.getElementById('skin-back');
         const skinNextArrow = document.getElementById('skin-next');
         const suitSquares = document.getElementById('suit-squares');
 
         if (nicknameInput) nicknameInput.style.display = 'none';
-        if (readyButton) readyButton.style.display = 'none';
+        if (readyWrapper) readyWrapper.style.display = 'none';
         if (skinBackArrow) skinBackArrow.style.display = 'none';
         if (skinNextArrow) skinNextArrow.style.display = 'none';
         if (suitSquares) suitSquares.style.display = 'none';
     }
+    else {
+        activeAudioInstances.forEach(audio => audio.pause()); // Stop any existing music
+        activeAudioInstances.clear();
+        playBackgroundMusic('./assets/audio/background_music.mp3', 0.4, musicVolume);
+    }
     
     // Start new background music
-    activeAudioInstances.forEach(audio => audio.pause()); // Stop any existing music
-    activeAudioInstances.clear();
-    playBackgroundMusic('./assets/audio/background_music.mp3', 0.4, musicVolume);
     console.log('Game starting!');
 }
 
@@ -1186,6 +1194,12 @@ function resetGameState() {
     
     // Reset music to normal if it was fading
     fadeBackgroundMusic(currentTrackNominalVolume, 2000);
+
+    const nicknameInput = document.getElementById('nickname');
+    nicknameInput.disabled = false;
+    nicknameInput.style.display = '';
+    const readyWrapper = document.getElementById('ready-wrapper');
+    if (readyWrapper) readyWrapper.style.display = '';
 }
 
 

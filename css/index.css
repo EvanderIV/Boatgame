@@ -171,7 +171,7 @@ body.darkable.darkmode {
 
 #sqr.grid {
 	background-image: repeating-linear-gradient(#000000 0 2px, transparent 1px 100%), repeating-linear-gradient(90deg, #000000 0 2px, transparent 1px 100%), url("../img/water_tiling_retro.gif");
-	background-size: 10% 10%, 10% 10%, 20% 20%;
+	background-size: 12.5% 12.5%, 12.5% 12.5%, 20% 20%;
 	background-position: -1px -1px, -1px -1px, 0 0;
 	border-style: solid;
 	position: relative;

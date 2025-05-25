@@ -87,6 +87,7 @@ function setupSocketEventHandlers() {
     });
     // Add game starting handler
     socket.on('gameStarting', () => {
+        console.log('Received gameStarting event');
         if (onGameStarting) {
             onGameStarting();
         }
@@ -264,11 +265,17 @@ function showError(message) {
 
 // Export functions and event handlers
 window.networkManager = {
+    getSocket: () => socket,
+    setOnPlayerJoined: (callback) => { onPlayerJoined = callback; },
+    setOnPlayerLeft: (callback) => { onPlayerLeft = callback; },
+    setOnReadyStateUpdate: (callback) => { onReadyStateUpdate = callback; },
+    setOnPlayerInfoUpdate: (callback) => { onPlayerInfoUpdate = callback; },
+    setOnGameStarting: (callback) => { onGameStarting = callback; },
+    setOnRoomClosed: (callback) => { onRoomClosed = callback; },
     connectToServer,
     createRoom,
     joinRoom,
     setReadyState,
-    socket, // Expose socket for direct events
     updatePlayerInfo: (data) => {
         console.log('NetworkManager: Sending player info update:', data);
         if (socket && socket.connected) {
